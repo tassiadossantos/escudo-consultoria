@@ -1,0 +1,10 @@
+packages:
+  "framer-motion": "For premium scroll animations, floating stat cards, and smooth accordion transitions"
+  "clsx": "For conditional tailwind class merging"
+  "tailwind-merge": "For reliable tailwind class merging"
+
+images: []
+
+notes:
+  - "The app uses a frontend-only architecture for the landing page with simulated logic for the calculator."
+  - "User-provided assets (logo, hero-professional, client1-5) are assumed to be in the public directory."
