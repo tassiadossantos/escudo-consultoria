@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 import Home from "@/pages/Home";
+import Checklist from "@/pages/Checklist";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/servicos" component={ServicesPage} />
       <Route path="/servicos/:slug" component={ServiceDetails} />
       <Route path="/orcamento" component={Orcamento} />
+      <Route path="/checklist" component={Checklist} />
       <Route component={NotFound} />
     </Switch>
   );

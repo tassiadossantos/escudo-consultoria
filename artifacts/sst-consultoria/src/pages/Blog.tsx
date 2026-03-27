@@ -1,162 +1,10 @@
+import { posts } from "./posts";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
-import { Calendar, Clock, ArrowRight, Tag } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Tag, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
-
-export const posts = [
-  {
-    id: 1,
-    title: "CIPA em 2026: Guia Completo sobre NR-5, Eleição, Treinamento e o que Mudou com o Combate ao Assédio",
-    excerpt: "CIPA mal estruturada ou apenas no papel gera multas de R$ 6.708,08 e responsabilização em acidentes. Veja o que a NR-5 atualizada exige, como dimensionar e eleger corretamente e as novas obrigações de combate ao assédio.",
-    date: "19 Mar 2026",
-    category: "Cultura Organizacional",
-    readTime: "12 min",
-    image: "/blog/treinamento-cipa.jpg",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Riscos Psicossociais na NR-1: O que a sua Empresa tem a ver com isso?",
-    excerpt: "Burnout, ansiedade e riscos psicossociais estão no topo dos afastamentos no Brasil. Veja o que a NR-1 atualizada exige e como implementar programas de saúde mental no trabalho.",
-    date: "19 Mar 2026",
-    category: "Saúde e Bem-Estar",
-    readTime: "7 min",
-    image: "/blog/saude-mental.jpg",
-    featured: false,
-  },
-  {
-    id: 3,
-    title: "Tecnologia na Segurança do Trabalho: Como a SST 4.0 está Prevenindo Acidentes e Salvando Vidas",
-    excerpt: "Descubra como IoT, Inteligência Artificial, wearables e softwares de gestão estão transformando a SST no Brasil. Guia completo com casos reais, checklist de implementação e tendências para 2026.",
-    date: "19 Mar 2026",
-    category: "Inovação e Tecnologia",
-    readTime: "10 min",
-    image: "/blog/tecnologia-sst.jpg",
-    featured: false,
-  },
-  {
-    id: 4,
-    title: "Ergonomia no Trabalho: Guia Completo sobre NR-17, LER/DORT e como Implementar a AET na sua Empresa",
-    excerpt: "LER e DORT são responsáveis por mais de 30% dos afastamentos no Brasil. Entenda o que a NR-17 exige, quando a AET é obrigatória e como estruturar um programa que previne lesões e reduz afastamentos.",
-    date: "19 Mar 2026",
-    category: "Ergonomia e Saúde",
-    readTime: "6 min",
-    image: "/blog/ergonomia-escritorio.jpg",
-    featured: false,
-  },
-  {
-    id: 5,
-    title: "Gestão de Riscos Ocupacionais: Como o GRO e o PGR Protegem sua Empresa com a NR-1 em 2026",
-    excerpt: "Entenda como estruturar a gestão de riscos ocupacionais com GRO e PGR conforme a NR-1 atualizada. Guia completo com os 5 grupos de riscos, metodologia de priorização e integração com PCMSO.",
-    date: "19 Mar 2026",
-    category: "Gestão e Conformidade",
-    readTime: "8 min",
-    image: "/blog/gestao-riscos.jpg",
-    featured: false,
-  },
-  {
-    id: 6,
-    title: "Gestão de EPI: Guia Completo sobre NR-6, Certificado de Aprovação e o que Muda em 2026",
-    excerpt: "Mais de 570 mil acidentes de trabalho por ano têm relação direta com a gestão inadequada de EPIs. Veja o que a NR-6 atualizada exige e como estruturar o controle de entrega para evitar autuações.",
-    date: "19 Mar 2026",
-    category: "Equipamentos de Proteção",
-    readTime: "11 min",
-    image: "/blog/epi-worker.jpg",
-    featured: false,
-  },
-  {
-    id: 7,
-    title: "Cultura de Segurança: Como Engajar Colaboradores na Prevenção de Acidentes de Forma Duradoura",
-    excerpt: "Campanhas isoladas não constroem cultura de segurança. Descubra como engajar colaboradores na prevenção com estratégias baseadas em liderança, CIPA, DDS, reconhecimento e participação real.",
-    date: "19 Mar 2026",
-    category: "Cultura Organizacional",
-    readTime: "12 min",
-    image: "/blog/engajar-colaboradores.jpg",
-    featured: false,
-  },
-  {
-    id: 8,
-    title: "Inspeção Periódica em SST: Como Estruturar um Cronograma que Previne Acidentes e Passa em Qualquer Fiscalização",
-    excerpt: "Descubra como implementar inspeções periódicas eficazes em máquinas, equipamentos e ambientes conforme NR-1, NR-12 e NR-35. Checklist completo e passo a passo para transformar inspeção em cultura de prevenção.",
-    date: "19 Mar 2026",
-    category: "Fiscalização",
-    readTime: "11 min",
-    image: "/blog/inspecao-periodica.jpg",
-    featured: false,
-  },
-  {
-    id: 9,
-    title: "Comunicação em SST: Como Falhas de Comunicação Geram Acidentes e o que a NR-1 Exige",
-    excerpt: "Estudos mostram que falhas de comunicação estão entre as principais causas de acidentes de trabalho. Descubra o que a NR-1 exige e como estruturar canais eficazes de comunicação preventiva.",
-    date: "19 Mar 2026",
-    category: "Cultura Organizacional",
-    readTime: "12 min",
-    image: "/blog/comunicacao-sst.jpg",
-    featured: false,
-  },
-  {
-    id: 10,
-    title: "Fiscalização do MTE: Checklist Completo para sua Empresa Estar Pronta Antes do Auditor Chegar",
-    excerpt: "O auditor fiscal não avisa quando vai chegar. Veja o checklist completo com todos os documentos, condições e procedimentos que o MTE verifica em 2026 e como transformar cada visita em confirmação.",
-    date: "02 Fev 2024",
-    category: "Fiscalização",
-    readTime: "13 min",
-    image: "/blog/checklist-fiscalizacao.jpg",
-    featured: false,
-  },
-  {
-    id: 11,
-    title: "Documentação de SST: O Guia Completo dos Registros que Protegem sua Empresa e o que Muda com o eSocial",
-    excerpt: "Sem documentação de SST, o ônus da prova recai sobre a empresa. Veja quais registros são obrigatórios, como o eSocial transforma silêncio em confissão de culpa e os valores das multas atualizados.",
-    date: "18 Jan 2024",
-    category: "Gestão Documental",
-    readTime: "12 min",
-    image: "/blog/documentacao-acidente.jpg",
-    featured: false,
-  },
-  {
-    id: 12,
-    title: "Cronograma Anual de SST: Como Planejar a Segurança do Trabalho para o Ano Inteiro",
-    excerpt: "Sem cronograma de SST, a empresa reage a crises em vez de preveni-las. Veja como estruturar um planejamento anual por mês, o que não pode faltar em 2026 e como integrar treinamentos, documentos e eSocial.",
-    date: "05 Jan 2024",
-    category: "Gestão e Planejamento",
-    readTime: "12 min",
-    image: "/blog/cronograma-sst.jpg",
-    featured: false,
-  },
-  {
-    id: 13,
-    title: "Treinamento NR 35: Guia Completo sobre Trabalho em Altura, Obrigações e Conformidade Legal",
-    excerpt: "Tudo o que sua empresa precisa saber sobre o treinamento NR 35: quem é obrigado, carga horária, reciclagem, certificados, EPIs e consequências do descumprimento.",
-    date: "20 Nov 2023",
-    category: "Treinamentos e NRs",
-    readTime: "9 min",
-    image: "/blog/treinamento-nr35.jpg",
-    featured: false,
-  },
-  {
-    id: 14,
-    title: "Fiscalização do MTE em 2026: Os 5 Erros que Geram Multa e Como Evitar Autuação na sua Empresa",
-    excerpt: "O MTE intensificou as fiscalizações e os valores das multas por descumprimento das NRs subiram. Veja os erros mais comuns que geram autuação e como blindar sua empresa antes que o fiscal chegue.",
-    date: "02 Nov 2023",
-    category: "Fiscalização",
-    readTime: "11 min",
-    image: "/blog/multas-mte.jpg",
-    featured: false,
-  },
-  {
-    id: 15,
-    title: "PGR: O Guia Completo para Substituir o PPRA e Estar em Conformidade com a NR-1 em 2026",
-    excerpt: "Entenda o que é o PGR, como ele substituiu o PPRA, o que a NR-1 atualizada exige e como implementar o Programa de Gerenciamento de Riscos na sua empresa antes que a fiscalização punitiva comece.",
-    date: "15 Out 2023",
-    category: "Legislação",
-    readTime: "11 min",
-    image: "/blog/pgr-ppra.jpg",
-    featured: false,
-  },
-];
 
 const categoryColors: Record<string, string> = {
   "Cultura Organizacional": "bg-purple-500/90",
@@ -173,7 +21,7 @@ const categoryColors: Record<string, string> = {
 };
 
 
-const allCategories = ["Todos", ...Array.from(new Set(posts.map((p) => p.category)))];
+const allCategories = ["Todos", ...Array.from(new Set(posts.map((p: { category: string }) => p.category)))];
 
 export default function Blog() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -182,7 +30,7 @@ export default function Blog() {
   const featured = posts[0];
   const filtered = posts
     .slice(1)
-    .filter((p) => activeCategory === "Todos" || p.category === activeCategory);
+    .filter((p: { category: string }) => activeCategory === "Todos" || p.category === activeCategory);
 
   const featuredVisible = activeCategory === "Todos" || featured.category === activeCategory;
 

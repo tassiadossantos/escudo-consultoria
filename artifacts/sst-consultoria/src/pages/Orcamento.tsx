@@ -7,8 +7,7 @@ export default function Orcamento() {
   const [step, setStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
-  
-
+  const [consent, setConsent] = useState(false);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -54,6 +53,10 @@ export default function Orcamento() {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.phone) {
       setError("Preencha todos os campos de contato.");
+      return;
+    }
+    if (!consent) {
+      setError("É necessário aceitar o consentimento LGPD para prosseguir.");
       return;
     }
     setError("");
@@ -362,7 +365,6 @@ export default function Orcamento() {
                     <p className="text-muted-foreground font-medium">Para onde enviamos a proposta?</p>
                   </div>
                 </div>
-                
                 <form onSubmit={submitForm} className="space-y-6">
                   <div>
                     <label className="block text-sm font-bold text-secondary mb-3 uppercase tracking-wide">Seu Nome Completo *</label>
@@ -414,14 +416,28 @@ export default function Orcamento() {
                       <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 rotate-90 pointer-events-none" />
                     </div>
                   </div>
-                  
+                  {/* Consentimento LGPD */}
+                  <div className="flex items-start gap-3 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <input
+                      id="consent-lgpd"
+                      type="checkbox"
+                      checked={consent}
+                      onChange={e => setConsent(e.target.checked)}
+                      className="mt-1 accent-primary w-5 h-5"
+                      required
+                    />
+                    <label htmlFor="consent-lgpd" className="text-sm text-gray-700 select-none">
+                      Li e concordo com a <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline text-primary font-semibold">Política de Privacidade e Consentimento LGPD</a>.<br/>
+                      Autorizo o uso dos dados para contato e envio de proposta, conforme descrito.
+                    </label>
+                  </div>
                   <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
-                    <button type="button" onClick={() => setStep(3)} className="px-6 py-4 rounded-xl font-bold flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-secondary transition-colors disabled:opacity-50" disabled={mutation.isPending}>
+                    <button type="button" onClick={() => setStep(3)} className="px-6 py-4 rounded-xl font-bold flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-secondary transition-colors">
                       <ChevronLeft size={20} /> Voltar
                     </button>
-                    <button type="submit" disabled={mutation.isPending} className="bg-primary text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(22,163,74,0.4)] disabled:opacity-70 text-lg hover:-translate-y-1">
-                      {mutation.isPending ? "Enviando..." : "Finalizar Solicitação"}
-                      {!mutation.isPending && <Send size={20} />}
+                    <button type="submit" className="bg-primary text-white px-10 py-4 rounded-xl font-bold flex items-center gap-3 hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(22,163,74,0.4)] text-lg hover:-translate-y-1">
+                      Finalizar Solicitação
+                      <Send size={20} />
                     </button>
                   </div>
                 </form>

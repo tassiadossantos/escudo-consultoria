@@ -29,6 +29,21 @@ export default function Home() {
         <HeroSection />
         <StatsSection />
         <ServicesSection />
+        <section className="py-16 bg-accent/10 border-y border-accent/20 flex justify-center items-center">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-accent-foreground mb-2 flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-7 h-7 text-accent" />
+              Checklist de Conformidade Gratuito
+            </h2>
+            <p className="text-lg text-accent-foreground/80">Descubra em minutos se sua empresa está em dia com as exigências do Ministério do Trabalho. Faça o checklist e receba um diagnóstico instantâneo.</p>
+            <Link
+              href="/checklist"
+              className="inline-block px-8 py-3 bg-accent text-accent-foreground text-lg font-semibold rounded-xl shadow hover:bg-accent/90 hover:text-white transition-all duration-300 mt-2"
+            >
+              Acessar Checklist Agora
+            </Link>
+          </div>
+        </section>
         <CalculatorSection />
         <TestimonialsSection />
         <WhyUsSection />
@@ -62,7 +77,7 @@ function HeroSection() {
             className="space-y-8"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-accent">
-              <AlertTriangle className="w-4 h-4" />
+              Calculadora de Multa Real
               <span>Fiscalização MTE intensificada em 2026</span>
             </div>
 
@@ -78,6 +93,7 @@ function HeroSection() {
             <p className="text-lg text-secondary-foreground/80 leading-relaxed max-w-xl">
               Evite multas de até <strong className="text-white">R$ 250 mil</strong>. PGR, APR, e Treinamentos NR 35/33 entregues em até 48h com validade jurídica garantida.
             </p>
+
 
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
@@ -468,12 +484,17 @@ function CalculatorSection() {
 
           {/* Left — form */}
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/20 border border-destructive/30 text-xs font-bold text-destructive-foreground mb-6">
-              <AlertTriangle className="w-4 h-4" /> Calculadora de Multa Real
+
+            <div className="mb-2">
+              <h2 className="text-3xl md:text-4xl font-bold mb-2 text-destructive-foreground">Simulador de Risco Trabalhista</h2>
+              <p className="text-lg text-white/55 mb-4">
+                Descubra em segundos o valor estimado de autuação que sua empresa pode sofrer em caso de fiscalização do MTE hoje.
+              </p>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Calcule sua Multa Potencial</h2>
+
+            <h3 className="text-base md:text-2xl font-bold mb-4 text-destructive-foreground">Calcule sua Multa Potencial</h3>
             <p className="text-white/55 text-base mb-8 leading-relaxed">
-              Valores baseados na <strong className="text-white/80">Portaria MTE 66/2024</strong> e <strong className="text-white/80">Portaria 1.131/2025</strong> — as tabelas oficiais vigentes de gradação de multas do MTE.
+              Valores baseados na <strong className="font-bold">Portaria MTE 66/2024</strong> e <strong className="font-bold">Portaria 1.131/2025</strong> — as tabelas oficiais vigentes de gradação de multas do MTE.
             </p>
 
 

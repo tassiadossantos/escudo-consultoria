@@ -8,6 +8,8 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "build:schema": "tsc --project tsconfig.schema.json",
+    "push:schema": "pnpm run build:schema && cross-env DATABASE_URL=\"postgresql://postgres:Q5@WHfHpSBH8m3!*W8a9@db.otmtebgtdtjxyhvwlcuj.supabase.co:5432/postgres\" drizzle-kit push --schema dist/index.js --dialect postgresql",
     "push": "drizzle-kit push --config ./drizzle.config.ts",
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts"
   },
