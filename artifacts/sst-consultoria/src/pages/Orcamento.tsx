@@ -1,4 +1,5 @@
 import { useState } from "react";
+// TODO: Substituir por client gerado quando disponível
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, ChevronRight, ChevronLeft, Building2, HardHat, Clock, Send, Check } from "lucide-react";
 import { services } from "@/lib/data";
@@ -60,10 +61,46 @@ export default function Orcamento() {
       return;
     }
     setError("");
-    // Simulação de envio (mock)
-    setTimeout(() => {
+
+    // Registrar consentimento LGPD no backend
+    try {
+      const consentRes = await fetch("/api/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ipHash: "mocked_ip_hash", // TODO: calcular hash real do IP do usuário
+          timestamp: new Date().toISOString(),
+          policyVersion: "v1.0",
+          policyText: "Li e aceito a política de privacidade."
+        })
+      });
+      if (!consentRes.ok) {
+        const err = await consentRes.json();
+        setError("Erro ao registrar consentimento: " + (err.error || consentRes.status));
+        return;
+      }
+      const consentData = await consentRes.json();
+      // Enviar dados do lead/mensagem para backend, incluindo consentId
+      const messageRes = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: `Empresa: ${formData.companyName}\nCNPJ: ${formData.cnpj}\nFuncionários: ${formData.employees}\nSetor: ${formData.sector}\nServiços: ${formData.selectedServices.join(", ")}\nUrgência: ${formData.urgency}\nMelhor horário: ${formData.bestTime}`,
+          consentId: consentData.id
+        })
+      });
+      if (!messageRes.ok) {
+        const err = await messageRes.json();
+        setError("Erro ao registrar lead: " + (err.error || messageRes.status));
+        return;
+      }
       setIsSuccess(true);
-    }, 1000);
+    } catch (err) {
+      setError("Erro inesperado ao registrar consentimento.");
+    }
   };
 
   if (isSuccess) {
