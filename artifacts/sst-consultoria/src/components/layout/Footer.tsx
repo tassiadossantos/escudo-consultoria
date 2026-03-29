@@ -145,6 +145,11 @@ export function Footer() {
           <p className="text-secondary-foreground/50 text-sm">
             © {new Date().getFullYear()} Escudo Consultoria. Todos os direitos reservados.
           </p>
+          <div className="flex gap-4 text-xs">
+            <Link href="/privacidade" role="link" tabIndex={0} className="text-secondary-foreground/50 hover:text-primary underline transition-colors cursor-pointer">Política de Privacidade</Link>
+            <span className="text-secondary-foreground/30">|</span>
+            <Link href="/termos" role="link" tabIndex={0} className="text-secondary-foreground/50 hover:text-primary underline transition-colors cursor-pointer">Termos de Uso</Link>
+          </div>
         </div>
       </div>
     </footer>

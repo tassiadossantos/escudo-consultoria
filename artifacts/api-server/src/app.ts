@@ -61,12 +61,15 @@ const allowedOrigins = [
 	"https://escudo.consultoria.com.br"
 ];
 app.use(cors({
-	origin: (origin, callback) => {
-		// Permite requests sem origin (ex: curl, mobile)
-		if (!origin) return callback(null, true);
-		if (allowedOrigins.includes(origin)) return callback(null, true);
-		return callback(new Error("Not allowed by CORS"));
-	},
+	       origin: (origin, callback) => {
+		       // Permite requests sem origin (ex: curl, mobile)
+		       if (!origin) return callback(null, true);
+		       if (allowedOrigins.includes(origin)) return callback(null, true);
+		       // Retorna erro 403 explícito para origem não permitida
+		       const corsError = new Error("Not allowed by CORS");
+		       corsError.status = 403;
+		       return callback(corsError);
+	       },
 	credentials: true
 }));
 app.use(express.json());

@@ -77,7 +77,6 @@ function HeroSection() {
             className="space-y-8"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-accent">
-              Calculadora de Multa Real
               <span>Fiscalização MTE intensificada em 2026</span>
             </div>
 

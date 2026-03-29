@@ -14,6 +14,8 @@ import ServicesPage from "@/pages/ServicesPage";
 import ServiceDetails from "@/pages/ServiceDetails";
 import NotFound from "@/pages/not-found";
 import Orcamento from "@/pages/Orcamento";
+import Privacidade from "@/pages/privacidade";
+import Termos from "@/pages/termos";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ function Router() {
       <Route path="/servicos/:slug" component={ServiceDetails} />
       <Route path="/orcamento" component={Orcamento} />
       <Route path="/checklist" component={Checklist} />
+      <Route path="/privacidade" component={Privacidade} />
+      <Route path="/termos" component={Termos} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -11,15 +11,32 @@
   "devDependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.59.1",
     "@tailwindcss/oxide-win32-x64-msvc": "^4.2.2",
+    "@types/jest": "^30.0.0",
+    "autocannon": "^8.0.0",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^10.1.0",
+    "jest": "^30.3.0",
+    "k6": "^0.0.0",
     "lightningcss-win32-x64-msvc": "^1.32.0",
     "prettier": "^3.8.1",
-    "tsx": "catalog:",
+    "ts-jest": "^29.4.6",
     "typescript": "~5.9.3",
+    "vite": "catalog:",
     "vitest": "^4.1.2"
   },
   "dependencies": {
+    "@tanstack/react-query": "catalog:",
+    "class-variance-authority": "catalog:",
     "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "catalog:",
+    "framer-motion": "catalog:",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-markdown": "^10.1.0",
+    "tailwind-merge": "catalog:",
+    "wouter": "^3.9.0",
     "zod": "catalog:"
   }
 }

@@ -24,18 +24,45 @@ export default function Contact() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      toast({
-        title: "Mensagem enviada com sucesso!",
-        description: "Nossa equipe entrará em contato em breve.",
+    const formData = new FormData(e.target as HTMLFormElement);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      message: formData.get("message"),
+      consentLGPD: formData.get("consentLGPD") === "on", // true se marcado
+    };
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
+      if (res.ok) {
+        toast({
+          title: "Mensagem enviada com sucesso!",
+          description: "Nossa equipe entrará em contato em breve.",
+        });
+        (e.target as HTMLFormElement).reset();
+      } else {
+        toast({
+          title: "Erro ao enviar mensagem",
+          description: "Tente novamente mais tarde.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Erro ao enviar mensagem",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+    }
   };
 
   return (
@@ -106,17 +133,17 @@ export default function Contact() {
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-6" id="form-contato">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Nome Completo</label>
-                  <input required type="text" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Seu nome" />
+                  <input required name="name" type="text" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Seu nome" />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">E-mail</label>
-                    <input required type="email" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="seu@email.com" />
+                    <input required name="email" type="email" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="seu@email.com" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-2">Telefone</label>
-                    <input required type="tel" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="(00) 00000-0000" />
+                    <input required name="phone" type="tel" className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="(00) 00000-0000" />
                   </div>
                 </div>
 
@@ -137,9 +164,15 @@ export default function Contact() {
 
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">Mensagem</label>
-                  <textarea required rows={4} className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none" placeholder="Como podemos ajudar?"></textarea>
+                  <textarea required name="message" rows={4} className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none" placeholder="Como podemos ajudar?"></textarea>
                 </div>
 
+                <div className="flex items-center gap-2">
+                  <input required name="consentLGPD" type="checkbox" id="consentLGPD" className="accent-primary" />
+                  <label htmlFor="consentLGPD" className="text-sm text-muted-foreground select-none">
+                    Concordo com a <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="underline text-primary">Política de Privacidade</a> e autorizo o uso dos meus dados para contato.
+                  </label>
+                </div>
                 <button 
                   type="submit" 
                   disabled={isSubmitting}

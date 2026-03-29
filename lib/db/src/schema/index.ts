@@ -19,3 +19,5 @@
 
 export * from "./consent";
 export * from "./messages";
+export * from "./notification_queue";
+export * from "./data_deletion_requests";
