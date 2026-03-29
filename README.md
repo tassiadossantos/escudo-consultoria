@@ -129,9 +129,12 @@ pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
 
 ---
 
-## SEGURANÇA, LGPD E CONFORMIDADE
+
+## SEGURANÇA, LGPD, AUTOMAÇÃO E CONFORMIDADE
 - Consentimento granular, registro de opt-in, política de privacidade clara
-- Fila de mensagens com retry para WhatsApp/email
+- Fila de eventos (notification_queue) para WhatsApp/email/webhook, com retry e rastreabilidade
+- Worker automatizado para processar eventos e enviar notificações (scripts/notification-worker.js)
+- Soft delete, auditoria detalhada, logs e webhook externo para exclusão LGPD
 - Processo sistematizado de reviews no Google Meu Negócio
 - Analytics sem cookies (Plausible)
 
@@ -144,5 +147,14 @@ pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
 - Stop overthinking, just build it.
 
 ---
+
+---
+
+## AUTOMAÇÃO DE NOTIFICAÇÕES E EVENTOS
+
+- Toda ação crítica (lead, consentimento, exclusão, erro) gera evento na fila notification_queue
+- O worker lê a fila e envia notificações (WhatsApp, e-mail, webhook, etc.)
+- Integração pronta para Twilio/WhatsApp (ver instruções no backend)
+- Status e rastreabilidade total de cada evento (pending, sent, failed)
 
 **Este documento é um artefato vivo. Atualize a cada decisão relevante.**
