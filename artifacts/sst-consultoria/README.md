@@ -14,11 +14,19 @@ Este diretório contém o frontend da Plataforma Digital SST.
    ```sh
    cd artifacts/sst-consultoria
    ```
+
 3. Rode o servidor de desenvolvimento:
    ```sh
    pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
    ```
    - Acesse: http://localhost:5173/
+
+### Observação sobre experiência visual
+
+Os cards de seleção (urgência e serviços) foram ajustados para garantir acessibilidade e consistência visual:
+- O indicador de seleção (círculo verde) aparece corretamente em qualquer opção selecionada.
+- O fundo do card muda conforme a opção, mas a borda permanece neutra.
+- Toda a área do card é clicável, melhorando a usabilidade.
 
 > Para detalhes completos de arquitetura, visão estratégica, roadmap e instruções avançadas, consulte o [README na raiz do projeto](../../README.md).
 

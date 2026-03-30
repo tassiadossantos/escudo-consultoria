@@ -4,6 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, ChevronRight, ChevronLeft, Building2, HardHat, Clock, Send, Check } from "lucide-react";
 import { services } from "@/lib/data";
 
+const urgencyOptions = [
+  { id: 'urgent', title: 'Urgente (Até 7 dias)', desc: 'Preciso resolver para ontem. Risco de multa ou obra parada.', color: 'border-red-500', bg: 'bg-red-50' },
+  { id: 'medium', title: 'Médio Prazo (Até 30 dias)', desc: 'Estou me planejando para regularizar este mês.', color: 'border-primary', bg: 'bg-primary/5' },
+  { id: 'low', title: 'Sem Urgência (Mais de 30 dias)', desc: 'Apenas cotando para planejamento futuro.', color: 'border-gray-400', bg: 'bg-gray-50' }
+];
+
 export default function Orcamento() {
   const [step, setStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -75,11 +81,26 @@ export default function Orcamento() {
         })
       });
       if (!consentRes.ok) {
-        const err = await consentRes.json();
-        setError("Erro ao registrar consentimento: " + (err.error || consentRes.status));
+        let errMsg = `Erro ao registrar consentimento: ${consentRes.status}`;
+        try {
+          const text = await consentRes.text();
+          if (text) {
+            try {
+              const err = JSON.parse(text);
+              errMsg = "Erro ao registrar consentimento: " + (err.error || consentRes.status);
+            } catch {
+              errMsg = `Erro ao registrar consentimento: ${text}`;
+            }
+          }
+        } catch {}
+        setError(errMsg);
         return;
       }
-      const consentData = await consentRes.json();
+      let consentData: any = {};
+      try {
+        const text = await consentRes.text();
+        consentData = text ? JSON.parse(text) : {};
+      } catch { consentData = {}; }
       // Enviar dados do lead/mensagem para backend, incluindo consentId
       const messageRes = await fetch("/api/messages", {
         method: "POST",
@@ -93,13 +114,29 @@ export default function Orcamento() {
         })
       });
       if (!messageRes.ok) {
-        const err = await messageRes.json();
-        setError("Erro ao registrar lead: " + (err.error || messageRes.status));
+        let errMsg = `Erro ao registrar lead: ${messageRes.status}`;
+        try {
+          const text = await messageRes.text();
+          if (text) {
+            try {
+              const err = JSON.parse(text);
+              errMsg = "Erro ao registrar lead: " + (err.error || messageRes.status);
+            } catch {
+              errMsg = `Erro ao registrar lead: ${text}`;
+            }
+          }
+        } catch {}
+        setError(errMsg);
         return;
       }
       setIsSuccess(true);
-    } catch (err) {
-      setError("Erro inesperado ao registrar consentimento.");
+    } catch (err: any) {
+      let msg = "Erro inesperado ao registrar consentimento.";
+      if (err && typeof err === "object") {
+        if (err.message) msg += `\n${err.message}`;
+        if (err.stack) msg += `\n${err.stack}`;
+      }
+      setError(msg);
     }
   };
 
@@ -110,7 +147,7 @@ export default function Orcamento() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-10 md:p-14 rounded-[2rem] shadow-2xl max-w-xl w-full text-center border border-border relative z-10 mx-4"
+          className="bg-white p-10 md:p-14 rounded-4xl shadow-2xl max-w-xl w-full text-center border border-border relative z-10 mx-4"
         >
           <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8 relative">
             <motion.div
@@ -177,7 +214,7 @@ export default function Orcamento() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[2rem] shadow-xl border border-border p-6 md:p-12 relative overflow-hidden">
+        <div className="bg-white rounded-4xl shadow-xl border border-border p-6 md:p-12 relative overflow-hidden">
           {/* Subtle background decoration */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-bl-[100px] pointer-events-none"></div>
 
@@ -291,29 +328,34 @@ export default function Orcamento() {
                   </div>
                 </div>
                 
-                <div className="grid sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                  {services.map(s => (
-                    <label 
-                      key={s.id} 
-                      className={`flex items-start gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
-                        formData.selectedServices.includes(s.id) 
-                        ? 'border-primary bg-primary/5 shadow-md scale-[1.02]' 
-                        : 'border-border hover:border-primary/40 bg-gray-50 hover:bg-white'
-                      }`}
-                    >
-                      <div className="pt-1">
-                        <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
-                          formData.selectedServices.includes(s.id) ? 'bg-primary border-primary text-white' : 'border-gray-300 bg-white'
-                        }`}>
-                          {formData.selectedServices.includes(s.id) && <Check size={16} />}
+                <div className="grid sm:grid-cols-2 gap-4 max-h-125 overflow-y-auto pr-2 px-2 custom-scrollbar">
+                  {services.map(s => {
+                    const checked = formData.selectedServices.includes(s.id);
+                    return (
+                      <label
+                        key={s.id}
+                        className={`flex items-start gap-4 p-5 border-2 rounded-2xl cursor-pointer transition-all duration-200 ${
+                          checked
+                            ? 'border-border bg-primary/5 shadow-md scale-[1.02]'
+                            : 'border-border hover:border-primary/40 bg-gray-50 hover:bg-white'
+                        }`}
+                        htmlFor={`service-${s.id}`}
+                      >
+                        <input
+                          id={`service-${s.id}`}
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleService(s.id)}
+                          className="mt-1 accent-primary w-6 h-6 border-2 rounded-md focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shrink-0"
+                          aria-checked={checked}
+                        />
+                        <div>
+                          <span className="font-bold text-secondary text-lg block mb-1">{s.title}</span>
+                          <span className="text-sm text-muted-foreground leading-snug line-clamp-2">{s.name}</span>
                         </div>
-                      </div>
-                      <div>
-                        <span className="font-bold text-secondary text-lg block mb-1">{s.title}</span>
-                        <span className="text-sm text-muted-foreground leading-snug line-clamp-2">{s.name}</span>
-                      </div>
-                    </label>
-                  ))}
+                      </label>
+                    );
+                  })}
                 </div>
                 
                 <div className="flex justify-between items-center mt-10 pt-6 border-t border-border">
@@ -347,21 +389,29 @@ export default function Orcamento() {
                 </div>
                 
                 <div className="space-y-4">
-                  {[
-                    { id: 'urgent', title: 'Urgente (Até 7 dias)', desc: 'Preciso resolver para ontem. Risco de multa ou obra parada.', color: 'border-red-500', bg: 'bg-red-50' },
-                    { id: 'medium', title: 'Médio Prazo (Até 30 dias)', desc: 'Estou me planejando para regularizar este mês.', color: 'border-primary', bg: 'bg-primary/5' },
-                    { id: 'low', title: 'Sem Urgência (Mais de 30 dias)', desc: 'Apenas cotando para planejamento futuro.', color: 'border-gray-400', bg: 'bg-gray-50' }
-                  ].map(urg => (
-                    <label 
+                  {urgencyOptions.map(urg => (
+                    <label
                       key={urg.id}
-                      className={`flex items-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-300 ${
-                        formData.urgency === urg.id 
-                        ? `${urg.color} ${urg.bg} shadow-md scale-[1.01]` 
-                        : 'border-border bg-gray-50 hover:bg-white hover:border-gray-300'
+                      className={`flex items-center p-6 border-2 rounded-2xl cursor-pointer transition-all duration-300 relative select-none ${
+                        formData.urgency === urg.id
+                          ? `border-border ${urg.bg} shadow-md scale-[1.01]`
+                          : 'border-border bg-gray-50 hover:bg-white hover:border-gray-300'
                       }`}
+                      htmlFor={`urgency-${urg.id}`}
                     >
+                      <input
+                        type="radio"
+                        id={`urgency-${urg.id}`}
+                        name="urgency"
+                        value={urg.id}
+                        checked={formData.urgency === urg.id}
+                        onChange={() => updateForm('urgency', urg.id)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 opacity-0 cursor-pointer z-10"
+                        tabIndex={0}
+                        aria-checked={formData.urgency === urg.id}
+                      />
                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-5 transition-colors ${
-                        formData.urgency === urg.id ? `${urg.color.replace('border', 'bg')} border-transparent text-white` : 'border-gray-300 bg-white'
+                        formData.urgency === urg.id ? 'bg-primary border-transparent text-white' : 'border-gray-300 bg-white'
                       }`}>
                         {formData.urgency === urg.id && <div className="w-2.5 h-2.5 bg-white rounded-full"></div>}
                       </div>

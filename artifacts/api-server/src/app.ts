@@ -1,6 +1,7 @@
 
 
 import express, { type Express, Request, Response, NextFunction } from "express";
+import path from "path";
 import cors from "cors";
 import router from "./routes";
 import pino from "pino";
@@ -12,7 +13,30 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { randomUUID } from "crypto";
 
+
 const app: Express = express();
+app.set('trust proxy', 1); // Confia no primeiro proxy (ngrok, Vercel, etc)
+
+// Servir favicon.ico
+app.get("/favicon.ico", (req: Request, res: Response) => {
+	const faviconPath = path.join(__dirname, "../public/favicon.ico");
+	res.sendFile(faviconPath);
+});
+
+// Endpoint institucional na raiz
+app.get("/", (req: Request, res: Response) => {
+	res.json({
+		status: "ok",
+		name: "Escudo Consultoria API",
+		version: process.env.npm_package_version || "dev",
+		timestamp: new Date().toISOString(),
+	});
+});
+
+// Endpoint técnico para health check
+app.get("/health", (_req: Request, res: Response) => {
+	res.send("OK");
+});
 
 // Helmet para headers de segurança
 app.use(helmet());
@@ -58,18 +82,23 @@ app.use(expressPino({ logger, customProps: (req) => ({ traceId: req.traceId }) }
 
 const allowedOrigins = [
 	"http://localhost:3000",
+	"http://localhost:5173",
+	"http://localhost:5174",
 	"https://escudo.consultoria.com.br"
 ];
 app.use(cors({
-	       origin: (origin, callback) => {
-		       // Permite requests sem origin (ex: curl, mobile)
-		       if (!origin) return callback(null, true);
-		       if (allowedOrigins.includes(origin)) return callback(null, true);
-		       // Retorna erro 403 explícito para origem não permitida
-		       const corsError = new Error("Not allowed by CORS");
-		       corsError.status = 403;
-		       return callback(corsError);
-	       },
+	origin: (origin, callback) => {
+		// Permite requests sem origin (ex: curl, mobile)
+		if (!origin) return callback(null, true);
+		// Normaliza origin para comparação robusta
+		const normalizedOrigin = origin.replace(/\/$/, '').toLowerCase();
+		const isAllowed = allowedOrigins.some(o => normalizedOrigin === o.replace(/\/$/, '').toLowerCase());
+		if (isAllowed) return callback(null, true);
+		// Retorna erro 403 explícito para origem não permitida
+		const corsError = new Error("Not allowed by CORS");
+		corsError.status = 403;
+		return callback(corsError);
+	},
 	credentials: true
 }));
 app.use(express.json());

@@ -7,7 +7,9 @@
     "hello": "tsx ./src/hello.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "devDependencies": {
-    
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "pg": "^8.20.0",
+    "twilio": "^5.13.1"
   }
 }

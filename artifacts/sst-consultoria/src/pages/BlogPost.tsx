@@ -46,7 +46,13 @@ export default function BlogPost() {
           <div className="flex flex-wrap items-center gap-3 text-base md:text-lg text-muted-foreground mb-6 font-medium">
             <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>{post.date}</span>
             <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 10c-4.418 0-8-1.79-8-4V7a2 2 0 012-2h12a2 2 0 012 2v7c0 2.21-3.582 4-8 4z" /></svg>{post.category}</span>
-            <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" /></svg>{post.readTime}</span>
+            <span className="inline-flex items-center gap-1">
+              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
+              </svg>
+              {post.readTime}
+            </span>
           </div>
           {/* Imagem de capa */}
           <img src={post.image} alt={post.title} className="w-full rounded-3xl shadow-2xl mb-10 border-4 border-white" />

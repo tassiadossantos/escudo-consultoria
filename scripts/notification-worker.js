@@ -1,30 +1,44 @@
-// Worker simples para processar notification_queue
+// Worker para processar notification_queue e enviar WhatsApp via Twilio (ES Modules)
 // Execute: node scripts/notification-worker.js
 
-const { drizzle } = require("drizzle-orm/node-postgres");
-const { Pool } = require("pg");
-const { notificationQueue } = require("../../lib/db/src/schema/notification_queue");
+import 'dotenv/config';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import twilio from 'twilio';
+import { notificationQueue } from '../lib/db/src/schema/notification_queue.ts';
+import { eq } from 'drizzle-orm';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema: { notificationQueue } });
+const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+
+async function sendWhatsApp(to, body) {
+  return client.messages.create({
+    from: process.env.TWILIO_WHATSAPP_FROM,
+    to,
+    body,
+  });
+}
 
 async function processQueue() {
-  const pending = await db.select().from(notificationQueue).where(notificationQueue.status.eq("pending"));
+  const pending = await db.select().from(notificationQueue).where(eq(notificationQueue.status, 'pending'));
   for (const notif of pending) {
     try {
-      // Exemplo: apenas loga, mas aqui pode enviar e-mail, webhook, etc.
-      console.log("Processando notificação:", notif.type, notif.payload);
-      // Marcar como sent
+      if (notif.type === 'whatsapp') {
+        await sendWhatsApp(
+          notif.payload.to || process.env.TWILIO_WHATSAPP_TO,
+          notif.payload.message || JSON.stringify(notif.payload)
+        );
+      }
       await db.update(notificationQueue)
-        .set({ status: "sent", sentAt: new Date() })
-        .where(notificationQueue.id.eq(notif.id));
+        .set({ status: 'sent', sentAt: new Date() })
+        .where(eq(notificationQueue.id, notif.id));
+      console.log(`Notificação enviada: ${notif.id}`);
     } catch (err) {
       await db.update(notificationQueue)
-        .set({ status: "failed", error: err.message })
-        .where(notificationQueue.id.eq(notif.id));
-      console.error("Erro ao processar notificação:", notif.id, err);
+        .set({ status: 'failed', error: err.message })
+        .where(eq(notificationQueue.id, notif.id));
+      console.error('Erro ao processar notificação:', notif.id, err);
     }
   }
   await pool.end();
