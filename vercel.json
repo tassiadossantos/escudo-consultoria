@@ -1,9 +1,18 @@
 {
-  "version": 2,
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm -C artifacts/sst-consultoria run build",
-  "outputDirectory": "artifacts/sst-consultoria/dist/public",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+  "builds": [
+    {
+      "src": "artifacts/sst-consultoria/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "artifacts/sst-consultoria/dist/public",
+        "buildCommand": "pnpm -C artifacts/sst-consultoria run build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }
