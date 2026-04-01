@@ -1,35 +1,38 @@
 
-
 import { useParams } from "wouter";
 import { useEffect, useState } from "react";
-import { posts } from "./posts";
 import ReactMarkdown from "react-markdown";
 import "../styles/blog-article.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Link } from "wouter";
-
-// Importa todos os arquivos .md da pasta posts (Vite 4+)
-const markdownFiles = import.meta.glob('../posts/*.md', { query: '?raw', import: 'default' });
+import { getBlogPostBySlug, type BlogPostMeta } from "@/lib/blog";
 
 export default function BlogPost() {
-  const { id } = useParams();
-  const post = posts.find((p: { id: number }) => String(p.id) === id);
+  const params = useParams<{ slug?: string; id?: string }>();
+  const slug = params.slug ?? params.id;
+  const [post, setPost] = useState<BlogPostMeta | null>(null);
   const [markdown, setMarkdown] = useState<string | null>(null);
+  const tassiaSignature =
+    "#### **Autora:** *Tassia dos Santos — Técnica de Segurança do Trabalho, especialista em consultoria em SST e criadora de conteúdo sobre saúde ocupacional. Apaixonada por transformar normas complexas em histórias que mudam realidades dentro das empresas.*";
 
 
   useEffect(() => {
-    if (post && post.id) {
-      const filePath = `../posts/${post.id}.md`;
-      const loader = markdownFiles[filePath];
-      if (loader) {
-        loader().then((content: string) => setMarkdown(content)).catch(() => setMarkdown(null));
-      } else {
+    async function loadPost() {
+      if (!slug) {
+        setPost(null);
         setMarkdown(null);
+        return;
       }
+
+      const loadedPost = await getBlogPostBySlug(slug);
+      setPost(loadedPost);
+      setMarkdown(loadedPost?.markdown ?? null);
     }
-  }, [post]);
+
+    loadPost();
+  }, [slug]);
 
   if (!post) return <div className="p-8 text-center">Artigo não encontrado.</div>;
 
@@ -59,9 +62,15 @@ export default function BlogPost() {
           {/* Autor Premium */}
           {post.author && (
             <div className="mb-10">
-              <div className="pl-4 italic text-lg text-muted-foreground bg-white/60 py-2 rounded-r-xl shadow-sm">
-                <span className="font-bold text-primary">Autor:</span> <span className="font-medium">{post.author}</span>
-              </div>
+              {post.author === "Tassia dos Santos" ? (
+                <article className="prose prose-lg max-w-none bg-white/60 rounded-r-xl shadow-sm px-4 py-3 prose-headings:my-0 prose-p:my-0 prose-strong:text-primary prose-em:text-muted-foreground">
+                  <ReactMarkdown>{tassiaSignature}</ReactMarkdown>
+                </article>
+              ) : (
+                <div className="pl-4 italic text-lg text-muted-foreground bg-white/60 py-2 rounded-r-xl shadow-sm">
+                  <span className="font-bold text-primary">Autor:</span> <span className="font-medium">{post.author}</span>
+                </div>
+              )}
             </div>
           )}
           {/* Artigo Markdown Premium */}

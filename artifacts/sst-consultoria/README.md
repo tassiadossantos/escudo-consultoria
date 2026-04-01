@@ -17,9 +17,34 @@ Este diretório contém o frontend da Plataforma Digital SST.
 
 3. Rode o servidor de desenvolvimento:
    ```sh
-   pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
+    pnpm dev
    ```
    - Acesse: http://localhost:5173/
+
+### Ambiente e Build (Local e CI)
+
+Para padronizar execução entre ambientes, este pacote segue as regras abaixo:
+
+- `PORT`:
+   - Local: opcional (default `5173`)
+   - CI/Deploy: recomendado definir explicitamente
+- `BASE_PATH`:
+   - Local: opcional (default `/`)
+   - CI/Deploy: recomendado definir explicitamente (ex: `/`, `/app/`)
+
+O `vite.config.ts` já possui fallback local, então o build/dev não quebra sem essas variáveis no ambiente de desenvolvimento.
+
+Exemplos:
+
+- Build local (sem env):
+   ```sh
+   pnpm build
+   ```
+
+- Build com env explícito (CI):
+   ```sh
+   pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm build
+   ```
 
 ### Observação sobre experiência visual
 
@@ -138,6 +163,6 @@ Os cards de seleção (urgência e serviços) foram ajustados para garantir aces
 
 **Este documento é um artefato vivo. Atualize a cada decisão relevante.**
 - O frontend está localizado em `artifacts/sst-consultoria`.
-- O comando padrão de desenvolvimento é `pnpm dev` (com as variáveis de ambiente).
+- O comando padrão de desenvolvimento é `pnpm dev`.
 - O projeto utiliza monorepo com pnpm.
-- No Windows, sempre use `pnpm exec cross-env ...` para garantir que as variáveis de ambiente funcionem corretamente.
+- No Windows, use `pnpm exec cross-env ...` quando precisar forçar variáveis específicas (especialmente em scripts de CI).

@@ -81,9 +81,14 @@ pnpm exec cross-env PORT=3000 pnpm dev
 ### Rodar o frontend
 ```sh
 cd artifacts/sst-consultoria
-pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
+pnpm dev
 # Acesse: http://localhost:5173/
 ```
+
+Para padronizar o comportamento local e de CI do frontend, consulte a seção **Ambiente e Build (Local e CI)** em [artifacts/sst-consultoria/README.md](artifacts/sst-consultoria/README.md). Em resumo:
+
+- Local: `PORT` e `BASE_PATH` são opcionais, com defaults `5173` e `/`
+- CI/Deploy: defina `PORT` e `BASE_PATH` explicitamente para evitar divergências de ambiente
 
 #### Possíveis erros e soluções
 - Se ocorrer erro de dependências nativas (ex: @rollup/rollup-win32-x64-msvc, lightningcss-win32-x64-msvc, @tailwindcss/oxide-win32-x64-msvc):
@@ -137,6 +142,12 @@ pnpm exec cross-env PORT=5173 BASE_PATH=/ pnpm dev
 - Soft delete, auditoria detalhada, logs e webhook externo para exclusão LGPD
 - Processo sistematizado de reviews no Google Meu Negócio
 - Analytics sem cookies (Plausible)
+
+---
+
+## DOCUMENTAÇÃO POR PACOTE
+- Frontend SST: [artifacts/sst-consultoria/README.md](artifacts/sst-consultoria/README.md)
+- Backend API: [artifacts/api-server/README.md](artifacts/api-server/README.md)
 
 ---
 

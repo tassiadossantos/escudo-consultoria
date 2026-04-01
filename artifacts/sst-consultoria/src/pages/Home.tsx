@@ -342,74 +342,99 @@ function getFineRange(emp: number, level: "I1"|"I2"|"I3"|"I4"): [number, number]
 const ESOCIAL_PER_WORKER = 104.31;   // acréscimo eSocial por trabalhador (Portaria 1.131/2025 Art. 81)
 const PCMSO_PER_WORKER   = 402.53;   // por trabalhador sem ASO/treinamento (usado em NR33/NR35)
 const MAX_FINE           = 44396.84; // teto por infração (Portaria 1.131/2025)
-const MAX_RECIDIVA       = 88793.68; // teto reincidência (dobro)
 
 type CalcResult = {
   min: number; max: number; risk: "BAIXO"|"MÉDIO"|"ALTO"|"GRAVÍSSIMO";
-  breakdown: { label: string; value: string }[];
+  breakdown: { label: string; value: string; show?: boolean }[];
   legal: string;
 };
+
+
 
 function calcFine(
   service: string, emp: number, situation: string,
   affectedWorkers: number, recidiva: boolean
 ): CalcResult {
-  let [baseMin, baseMax] = [0, 0];
-  let perWorkerAdd = 0;
-  let affectedCount = affectedWorkers;
+  let base = 0;
+  let acrescimo = 0;
   let legal = "";
-  const breakdown: { label: string; value: string }[] = [];
+  let affectedCount = affectedWorkers;
+  let breakdown: { label: string; value: string; show?: boolean }[] = [];
 
   if (service === "pgr") {
     const level = situation === "ausente" ? "I4" : "I3";
-    [baseMin, baseMax] = getFineRange(emp, level);
-    perWorkerAdd = ESOCIAL_PER_WORKER;
+    base = getFineRange(emp, level)[1];
+    acrescimo = emp * ESOCIAL_PER_WORKER;
     legal = "NR-1 + Portaria 1.131/2025 Art. 81";
-    breakdown.push({ label: `Infração NR-1 (${level} — PGR ${situation})`, value: `${formatCurrency(baseMin)} – ${formatCurrency(baseMax)}` });
-    breakdown.push({ label: `Acréscimo eSocial (${emp} trab. × R$ 104,31)`, value: formatCurrency(Math.min(emp * ESOCIAL_PER_WORKER, MAX_FINE - baseMax)) });
+    breakdown = [
+      { label: `Infração NR-1 (${level} — PGR ${situation})`, value: formatCurrency(base) },
+      { label: `Acréscimo eSocial (${emp} trab. × R$ 104,31)`, value: formatCurrency(acrescimo) }
+    ];
   } else if (service === "apr") {
     const level = situation === "ausente" ? "I3" : "I2";
-    [baseMin, baseMax] = getFineRange(emp, level);
-    perWorkerAdd = situation === "ausente" ? ESOCIAL_PER_WORKER : 0;
-    affectedCount = situation === "ausente" ? emp : 0;
+    base = getFineRange(emp, level)[1];
+    acrescimo = situation === "ausente" ? emp * ESOCIAL_PER_WORKER : 0;
     legal = "NR-1 / NR-35 + Portaria 66/2024";
-    breakdown.push({ label: `Infração NR-1 (${level} — APR ${situation})`, value: `${formatCurrency(baseMin)} – ${formatCurrency(baseMax)}` });
-    if (perWorkerAdd > 0) breakdown.push({ label: `Acréscimo eSocial (${emp} trab. × R$ 104,31)`, value: formatCurrency(Math.min(emp * perWorkerAdd, MAX_FINE - baseMax)) });
+    breakdown = [
+      { label: `Infração NR-1 (${level} — APR ${situation})`, value: formatCurrency(base) }
+    ];
+    if (acrescimo > 0) breakdown.push({ label: `Acréscimo eSocial (${emp} trab. × R$ 104,31)`, value: formatCurrency(acrescimo) });
   } else if (service === "nr35") {
-    [baseMin, baseMax] = getFineRange(emp, "I3");
-    perWorkerAdd = PCMSO_PER_WORKER;
+    base = getFineRange(emp, "I3")[1];
+    acrescimo = affectedCount * PCMSO_PER_WORKER;
     legal = "NR-35 + Portaria 66/2024 (I3 — Segurança)";
-    breakdown.push({ label: "Infração NR-35 (I3 — sem treinamento)", value: `${formatCurrency(baseMin)} – ${formatCurrency(baseMax)}` });
-    breakdown.push({ label: `Por trabalhador s/ treinamento (${affectedCount} × R$ 402,53)`, value: formatCurrency(affectedCount * PCMSO_PER_WORKER) });
+    breakdown = [
+      { label: "Infração NR-35 (I3 — sem treinamento)", value: formatCurrency(base) },
+      { label: `Por trabalhador s/ treinamento (${affectedCount} × R$ 402,53)`, value: formatCurrency(acrescimo) }
+    ];
   } else if (service === "nr33") {
-    [baseMin, baseMax] = getFineRange(emp, "I4");
-    perWorkerAdd = PCMSO_PER_WORKER;
+    base = getFineRange(emp, "I4")[1];
+    acrescimo = affectedCount * PCMSO_PER_WORKER;
     legal = "NR-33 + Portaria 66/2024 (I4 — risco de morte)";
-    breakdown.push({ label: "Infração NR-33 (I4 — espaço confinado sem treinamento)", value: `${formatCurrency(baseMin)} – ${formatCurrency(baseMax)}` });
-    breakdown.push({ label: `Por trabalhador s/ treinamento (${affectedCount} × R$ 402,53)`, value: formatCurrency(affectedCount * PCMSO_PER_WORKER) });
+    breakdown = [
+      { label: "Infração NR-33 (I4 — espaço confinado sem treinamento)", value: formatCurrency(base) },
+      { label: `Por trabalhador s/ treinamento (${affectedCount} × R$ 402,53)`, value: formatCurrency(acrescimo) }
+    ];
   } else if (service === "oss") {
     const level = situation === "ausente" ? "I2" : "I1";
-    [baseMin, baseMax] = getFineRange(emp, level);
-    perWorkerAdd = 0; affectedCount = 0;
+    base = getFineRange(emp, level)[1];
+    acrescimo = 0;
     legal = "NR-1 + Portaria 66/2024";
-    breakdown.push({ label: `Infração NR-1 (${level} — OSS ${situation})`, value: `${formatCurrency(baseMin)} – ${formatCurrency(baseMax)}` });
+    breakdown = [
+      { label: `Infração NR-1 (${level} — OSS ${situation})`, value: formatCurrency(base) }
+    ];
   }
 
-  const workerAdd = affectedCount * perWorkerAdd;
-  let totalMin = Math.min(baseMin + workerAdd, MAX_FINE);
-  let totalMax = Math.min(baseMax + workerAdd, MAX_FINE);
+  // Valor bruto antes de tetos e reincidência
+  const totalBruto = base + acrescimo;
+  let total = totalBruto;
+  let tetoAplicado = false;
 
   if (recidiva) {
-    totalMin = Math.min(totalMin * 2, MAX_RECIDIVA);
-    totalMax = Math.min(totalMax * 2, MAX_RECIDIVA);
-    breakdown.push({ label: "Reincidência (dobro do valor — Portaria 1.131/2025)", value: "× 2" });
+    total = totalBruto * 2;
+  } else {
+    if (totalBruto > MAX_FINE) {
+      total = MAX_FINE;
+      tetoAplicado = true;
+    } else {
+      total = totalBruto;
+    }
   }
 
-  const mid = (totalMin + totalMax) / 2;
-  const risk: CalcResult["risk"] =
-    mid > 20000 ? "GRAVÍSSIMO" : mid > 8000 ? "ALTO" : mid > 3000 ? "MÉDIO" : "BAIXO";
+  // Ajusta breakdown para refletir o teto
+  let breakdownFinal = [...breakdown];
+  if (recidiva) {
+    breakdownFinal.push({ label: "Reincidência (dobro do valor — Portaria 1.131/2025)", value: "× 2", show: true });
+  }
+  if (tetoAplicado) {
+    breakdownFinal.push({ label: `Teto legal aplicado (${recidiva ? "reincidência" : "infração única"})`, value: formatCurrency(total), show: true });
+  }
 
-  return { min: totalMin, max: totalMax, risk, breakdown, legal };
+  // O breakdown só mostra o teto se ele for aplicado, e o valor total sempre bate com o breakdown
+  const risk: CalcResult["risk"] =
+    total > 20000 ? "GRAVÍSSIMO" : total > 8000 ? "ALTO" : total > 3000 ? "MÉDIO" : "BAIXO";
+
+  return { min: total, max: total, risk, breakdown: breakdownFinal, legal };
 }
 
 function CalculatorSection() {
@@ -479,22 +504,26 @@ function CalculatorSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-stretch">
 
           {/* Left — form */}
-          <div>
+          <div className="flex flex-col h-full min-h-[540px] justify-stretch lg:mt-0">
 
-            <div className="mb-2">
+
+            <div className="mb-1 mt-0 lg:mt-[-32px]">
               <h2 className="text-3xl md:text-4xl font-bold mb-2 text-destructive-foreground">Simulador de Risco Trabalhista</h2>
-              <p className="text-lg text-white/55 mb-4">
+              <p className="text-lg text-white/55 mb-2">
                 Descubra em segundos o valor estimado de autuação que sua empresa pode sofrer em caso de fiscalização do MTE hoje.
+              </p>
+              <p className="text-base text-white/60 mb-6 mt-2">
+                Valores baseados na Portaria MTE 66/2024 e Portaria 1.131/2025.
               </p>
             </div>
 
-            <h3 className="text-base md:text-2xl font-bold mb-4 text-destructive-foreground">Calcule sua Multa Potencial</h3>
-            <p className="text-white/55 text-base mb-8 leading-relaxed">
+            {/* <h3 className="text-base md:text-2xl font-bold mb-1 text-destructive-foreground">Calcule sua Multa Potencial</h3> */}
+            {/* <p className="text-white/55 text-base mb-2 leading-relaxed">
               Valores baseados na <strong className="font-bold">Portaria MTE 66/2024</strong> e <strong className="font-bold">Portaria 1.131/2025</strong> — as tabelas oficiais vigentes de gradação de multas do MTE.
-            </p>
+            </p> */}
 
 
             <form onSubmit={handleSubmit} className="space-y-5 bg-white/5 p-6 md:p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
@@ -570,7 +599,8 @@ function CalculatorSection() {
               )}
 
               {/* Recidiva */}
-              <label className="flex items-center gap-3 cursor-pointer select-none group">
+              <label className={cn("flex items-center gap-3 cursor-pointer select-none group p-2 rounded-lg transition-all", recidiva ? "bg-destructive/10 border border-destructive/40" : "")}
+                title="Se marcado, o valor da multa será dobrado conforme Portaria 1.131/2025 (reincidência).">
                 <div
                   onClick={() => setRecidiva(!recidiva)}
                   className={cn(
@@ -580,7 +610,7 @@ function CalculatorSection() {
                 >
                   {recidiva && <Check className="w-3 h-3 text-white" />}
                 </div>
-                <span className="text-sm text-white/70">Empresa já foi autuada antes por esta mesma irregularidade <span className="text-destructive font-semibold">(reincidência — multa dobrada)</span></span>
+                <span className={cn("text-sm", recidiva ? "text-destructive font-bold" : "text-white/70")}>Empresa já foi autuada antes por esta mesma irregularidade <span className="text-destructive font-semibold">(reincidência — multa dobrada)</span></span>
               </label>
 
               <button
@@ -597,7 +627,7 @@ function CalculatorSection() {
           </div>
 
           {/* Right — result */}
-          <div className="lg:pt-32 flex flex-col justify-start">
+          <div className="flex flex-col h-full min-h-[540px] justify-stretch">
             <AnimatePresence mode="wait">
               {!result && !isCalculating && (
                 <motion.div
@@ -636,31 +666,34 @@ function CalculatorSection() {
                     "bg-destructive": result.risk === "GRAVÍSSIMO",
                   })} />
 
-                  <div className="p-7 space-y-5">
+                  <div className="p-8 space-y-5">
                     {/* Risk badge */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <span className={cn("px-4 py-1.5 rounded-full border text-xs font-bold tracking-widest", riskColors[result.risk])}>
                         RISCO {result.risk}
                       </span>
                       <span className="text-xs text-secondary-foreground/50">{serviceLabel[service]?.split(" — ")[0]}</span>
                     </div>
 
-                    {/* Fine range */}
+                    {/* Valor Total em destaque */}
                     <div className="text-center py-3">
-                      <p className="text-secondary-foreground/50 text-sm mb-1">Faixa de multa estimada</p>
+                      <span className="block text-black text-base md:text-lg font-extrabold mb-2 uppercase tracking-wide font-bold">Valor Total</span>
                       <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-2xl font-bold text-secondary/60">{formatCurrency(result.min)}</span>
-                        <span className="text-secondary/40 font-medium">até</span>
-                        <span className="text-4xl font-bold text-secondary">{formatCurrency(result.max)}</span>
+                        <span className="text-4xl font-extrabold text-green-700">
+                          {result ? formatCurrency(result.max) : "—"}
+                        </span>
                       </div>
                       {recidiva && (
                         <p className="text-xs text-destructive font-semibold mt-1">⚠ Valor já dobrado por reincidência</p>
+                      )}
+                      {result && result.breakdown.some(b => b.label.startsWith("Teto legal aplicado")) && (
+                        <p className="text-xs text-yellow-700 font-semibold mt-1">⚠ Teto legal aplicado: o valor bruto ultrapassou o limite máximo permitido pela legislação.</p>
                       )}
                     </div>
 
                     {/* Breakdown */}
                     <div className="bg-secondary/5 rounded-xl border border-secondary/10 divide-y divide-secondary/10">
-                      {result.breakdown.map((item, i) => (
+                      {result.breakdown.filter(item => item.show === undefined || item.show).map((item, i) => (
                         <div key={i} className="flex items-start justify-between gap-3 px-4 py-3">
                           <span className="text-xs text-neutral-800 leading-snug font-semibold">{item.label}</span>
                           <span className="text-xs font-bold text-neutral-900 whitespace-nowrap min-w-20 text-right block">{item.value || '—'}</span>

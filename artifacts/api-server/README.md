@@ -20,6 +20,34 @@ Este diretório contém o backend (API server) da Plataforma Digital SST.
    ```
    - Acesse: http://localhost:3000/
 
+### Ambiente e Execução (Local e CI)
+
+O backend exige `PORT` em runtime. O comportamento recomendado é:
+
+- Local:
+   - `pnpm dev` carrega o arquivo `.env` da raiz do monorepo via `dotenv-cli`
+   - Defina `PORT` no `.env` ou use `pnpm exec cross-env PORT=3000 pnpm dev` quando quiser forçar um valor específico
+- CI/Deploy:
+   - Defina `PORT` explicitamente no job/ambiente antes de iniciar o processo
+
+Exemplo de execução local com env explícito:
+
+```sh
+pnpm exec cross-env PORT=3000 pnpm dev
+```
+
+Exemplo de build no pacote:
+
+```sh
+pnpm build
+```
+
+Exemplo de validação de tipos:
+
+```sh
+pnpm typecheck
+```
+
 ## Fila de Notificações & Worker
 
 O backend publica eventos críticos (lead, consentimento, exclusão, erro) na tabela `notification_queue`.

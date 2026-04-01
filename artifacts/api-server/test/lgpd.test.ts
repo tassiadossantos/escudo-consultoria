@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from '../src/app';
+import { generateTestJWT } from './utils-jwt';
 
 describe('LGPD — Direito ao Esquecimento', () => {
   let consentId: number | undefined;
@@ -10,6 +11,7 @@ describe('LGPD — Direito ao Esquecimento', () => {
     const res = await request(app)
       .post('/api/consent')
       .send({
+        ipHash: 'hash_teste',
         timestamp: new Date().toISOString(),
         policyVersion: 'v1.0',
         policyText: 'Li e aceito a política de privacidade.'
@@ -34,16 +36,21 @@ describe('LGPD — Direito ao Esquecimento', () => {
     messageId = res.body.id;
   });
 
+
   it('deve deletar mensagem (direito ao esquecimento)', async () => {
+    const token = generateTestJWT();
     const res = await request(app)
-      .delete(`/api/messages/${messageId}`);
+      .delete(`/api/messages/${messageId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('success', true);
   });
 
   it('deve deletar consentimento (direito ao esquecimento)', async () => {
+    const token = generateTestJWT();
     const res = await request(app)
-      .delete(`/api/consent/${consentId}`);
+      .delete(`/api/consent/${consentId}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('success', true);
   });

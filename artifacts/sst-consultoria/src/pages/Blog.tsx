@@ -1,11 +1,10 @@
-import { posts } from "./posts";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Calendar, Clock, ArrowRight, Tag, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-
+import { getAllBlogPosts, type BlogPostMeta } from "@/lib/blog";
 const categoryColors: Record<string, string> = {
   "Cultura Organizacional": "bg-purple-500/90",
   "Saúde e Bem-Estar": "bg-rose-500/90",
@@ -20,19 +19,34 @@ const categoryColors: Record<string, string> = {
   "Legislação": "bg-violet-500/90",
 };
 
-
-const allCategories = ["Todos", ...Array.from(new Set(posts.map((p: { category: string }) => p.category)))];
-
 export default function Blog() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Todos");
+  const [visibleCount, setVisibleCount] = useState(9); // Quantos artigos mostrar inicialmente
+  const [posts, setPosts] = useState<BlogPostMeta[]>([]);
 
-  const featured = posts[0];
-  const filtered = posts
-    .slice(1)
-    .filter((p: { category: string }) => activeCategory === "Todos" || p.category === activeCategory);
+  useEffect(() => {
+    async function loadPosts() {
+      const loadedPosts = await getAllBlogPosts();
+      setPosts(loadedPosts);
+    }
+    loadPosts();
+  }, []);
 
-  const featuredVisible = activeCategory === "Todos" || featured.category === activeCategory;
+  const allCategories = [
+    "Todos",
+    ...Array.from(new Set(posts.map((p) => p.category))).filter(Boolean),
+  ];
+
+  const sortedPosts = posts;
+  const featured = sortedPosts[0];
+  // Remove o destaque da lista de artigos da grade
+  const filtered = sortedPosts.filter(
+    (p) => (activeCategory === "Todos" || p.category === activeCategory) && p.slug !== featured?.slug,
+  );
+  const visiblePosts = filtered.slice(0, visibleCount);
+
+  const featuredVisible = featured && (activeCategory === "Todos" || featured.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,7 +89,7 @@ export default function Blog() {
 
           {/* Featured article */}
           {featuredVisible && (
-            <Link href={`/blog/${featured.id}`} className="block group relative rounded-3xl overflow-hidden mb-12 cursor-pointer border border-border hover:border-primary/40 transition-all duration-500 shadow-2xl">
+            <Link href={`/blog/${featured.slug}`} className="block group relative rounded-3xl overflow-hidden mb-12 cursor-pointer border border-border hover:border-primary/40 transition-all duration-500 shadow-2xl">
               <article>
                 <div className="relative aspect-21/9 md:aspect-21/8 overflow-hidden">
                   <img
@@ -121,10 +135,10 @@ export default function Blog() {
 
           {/* Article grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-            {filtered.map((post) => (
+            {visiblePosts.map((post) => (
               <Link
-                key={post.id}
-                href={`/blog/${post.id}`}
+                key={post.slug}
+                href={`/blog/${post.slug}`}
                 className="group bg-card rounded-2xl border border-border overflow-hidden hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-400 cursor-pointer flex flex-col"
               >
                 {/* Image */}
@@ -163,6 +177,18 @@ export default function Blog() {
               </Link>
             ))}
           </div>
+
+          {/* Carregar mais button */}
+          {visibleCount < filtered.length && (
+            <div className="flex justify-center mt-10">
+              <button
+                onClick={() => setVisibleCount((c) => c + 9)}
+                className="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg hover:bg-primary/80 transition-all duration-200"
+              >
+                Carregar mais
+              </button>
+            </div>
+          )}
 
           {filtered.length === 0 && !featuredVisible && (
             <div className="text-center py-24 text-muted-foreground">
