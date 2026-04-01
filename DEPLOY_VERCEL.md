@@ -84,3 +84,19 @@
 - Vercel docs (Vite): https://vercel.com/guides/deploying-vite-with-vercel  
 - Config `vercel.json`: https://vercel.com/docs/projects/project-configuration  
 - SPA rewrites: https://vercel.com/docs/edge-network/rewrites
+
+---
+
+### Comandos rápidos para variáveis de ambiente (CLI)
+- Adicionar variável: `vercel env add NOME_VARIAVEL production` (repita para `preview` e `development` se necessário).  
+- Listar: `vercel env ls`  
+- Baixar para local: `vercel env pull .env.vercel.local`  
+- Após mudar variáveis sensíveis, rode um novo deploy (push na branch ou `vercel --prod`).
+
+> Pré-requisito: instalar a CLI (`npm i -g vercel`), logar (`vercel login`) e rodar na raiz do repo.
+
+### Domínio customizado
+1. Adicione o domínio: `vercel domains add seu-dominio.com`  
+2. Se usar DNS do provedor atual, crie um CNAME para o subdomínio ou altere nameservers para os da Vercel (a Vercel mostrará as instruções após o comando).  
+3. Para apontar a produção, vá em **Settings → Domains** e defina o domínio como primário.  
+4. Teste HTTPS automático (Let's Encrypt) — a Vercel provisiona sozinha.
