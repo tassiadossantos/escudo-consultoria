@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm -C artifacts/sst-consultoria run build",
+  "outputDirectory": "artifacts/sst-consultoria/dist/public",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
