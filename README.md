@@ -46,8 +46,8 @@ Proposta de Valor Central: **"O site que vende enquanto você dorme. Cada visita
 ---
 
 ## ARQUITETURA TÉCNICA
-- **Frontend:** Next.js 15 (App Router), shadcn/ui, Tailwind CSS, Framer Motion
-- **Backend:** Next.js API Routes, Supabase (Postgres, Auth, Storage), Resend (email), Twilio (WhatsApp), Plausible (analytics)
+- **Frontend:** React 19, Vite, Wouter, TanStack Query, Radix UI, Tailwind CSS, Framer Motion
+- **Backend:** Express, Supabase (Postgres, Auth, Storage), Resend (email), Twilio (WhatsApp), Plausible (analytics)
 - **Infra:** Vercel, Cloudflare, Registro.br, Sentry
 
 ### Paleta de Cores

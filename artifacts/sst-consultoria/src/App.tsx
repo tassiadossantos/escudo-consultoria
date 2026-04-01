@@ -19,6 +19,16 @@ import Termos from "@/pages/termos";
 
 const queryClient = new QueryClient();
 
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   return (
     <Switch>
@@ -38,17 +48,11 @@ function Router() {
 }
 
 function App() {
-  // Hook para detectar mudança de rota
-  const [location] = useLocation();
-  // Efeito: sempre que a rota mudar, faz scroll para o topo
-  React.useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [location]);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}> 
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>      
+          <ScrollToTop />
           <Router />
         </WouterRouter>
         <Toaster />

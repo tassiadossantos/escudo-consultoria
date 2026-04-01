@@ -60,24 +60,23 @@ Os cards de seleção (urgência e serviços) foram ajustados para garantir aces
 
 ## Arquitetura Técnica (Resumo)
 
-**Apresentação:** Next.js 15 App Router (SSG/ISR/SSR/CSR), Cloudflare CDN
-**API:** Next.js API Routes — /api/lead, /api/calculator, /api/chatbot, /api/portal
-**Dados:** Supabase (Postgres, Storage, Auth)
-**Serviços externos:** Resend (email), Twilio (WhatsApp), Plausible (analytics), Loops.so (drip), Sanity.io (CMS futuro)
+**Frontend:** React 19 + Vite + Wouter + TanStack Query + Tailwind CSS
+**Roteamento:** client-side com `wouter`
+**Build/Dev:** Vite com fallback local de `PORT` e `BASE_PATH`
+**Integração de API:** proxy local para o backend Express em `/api`
+**Estado/UI:** TanStack Query, componentes Radix, hooks locais e toast system
 
 **Decisões Arquiteturais:**
-- Home/Serviços/Blog: SSG+ISR
+- Home/Serviços/Blog: SPA com rotas client-side
 - Formulário: CSR multi-etapa
-- Portal do Cliente: SSR
 - Calculadora: CSR puro
-- Autenticação: Supabase Auth + RLS
-- Mensageria: API assíncrona com fila e retry
-- Conteúdo: MDX local (MVP), Sanity.io (escala)
+- Conteúdo: Markdown local para blog e páginas institucionais
+- Integração de backend: chamadas para o serviço Express do monorepo
 
 **Segurança & LGPD:**
 - Consentimento granular, registro de opt-in, política de privacidade clara
-- Rate limiting, honeypot/hCaptcha, RLS, MFA opcional, headers de segurança HTTP
-- Tabelas extras: consent_records, data_deletion_requests, audit_log, notification_queue
+- Rate limiting, honeypot/hCaptcha, headers de segurança HTTP no backend
+- Tabelas extras no backend: consent_records, data_deletion_requests, audit_log, notification_queue
 
 ---
 
@@ -132,7 +131,7 @@ Os cards de seleção (urgência e serviços) foram ajustados para garantir aces
 
 ## Visão de Longo Prazo
 
-- Ano 1: Product-Market Fit, portal básico, monolito Next.js
+- Ano 1: Product-Market Fit, portal básico, monolito React/Vite
 - Ano 2–3: Multi-tenancy, marketplace TSTs, pagamentos, app mobile
 - Ano 3–5: SaaS white-label, gestão EPI, integração eSocial, assinatura digital
 - Ano 5–10: Ecossistema SST, IA para geração de documentos, integração MTE, blockchain
@@ -143,7 +142,7 @@ Os cards de seleção (urgência e serviços) foram ajustados para garantir aces
 
 ## Glossário Técnico (trechos)
 
-- **SSG/ISR/SSR/CSR:** Estratégias de renderização Next.js
+- **SSG/ISR/SSR/CSR:** Estratégias de renderização web
 - **RLS:** Row Level Security (Supabase)
 - **ROPA:** Registro de atividades de dados pessoais (LGPD)
 - **MRR:** Receita recorrente mensal
