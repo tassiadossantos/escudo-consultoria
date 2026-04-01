@@ -44,6 +44,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "catalog:",
+    "tailwindcss": "^4.2.2",
     "vite": "catalog:"
   },
   "react-markdown": "^10.1.0",
