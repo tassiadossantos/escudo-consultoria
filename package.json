@@ -4,8 +4,12 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "dev": "pnpm run dev:site",
     "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "dev:site": "pnpm --filter @workspace/sst-consultoria exec cross-env PORT=5174 BASE_PATH=/ vite --config vite.config.ts --host 0.0.0.0",
+    "dev:preview": "pnpm --filter @workspace/mockup-sandbox exec cross-env PORT=5173 BASE_PATH=/ vite --config vite.config.ts --host 0.0.0.0",
+    "dev:all": "pnpm -w --parallel run dev:site dev:preview"
   },
   "private": true,
   "devDependencies": {

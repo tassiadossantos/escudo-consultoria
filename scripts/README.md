@@ -18,10 +18,10 @@ O worker processa eventos da fila `notification_queue` para automação de notif
 
 ## Configuração
 
-- Defina variáveis no `.env`:
-  - `DATABASE_URL` (Postgres/Supabase)
-  - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` (para WhatsApp)
-  - `WEBHOOK_URL` (opcional)
+- Copie [.env.example](.env.example) para `.env` e ajuste os valores:
+   - `DATABASE_URL` (Postgres/Supabase)
+   - `TWILIO_SID`, `TWILIO_TOKEN`, `TWILIO_WHATSAPP_FROM` (para WhatsApp)
+   - `WEBHOOK_URL` e `AUDIT_WEBHOOK_URL` (opcionais)
 
 ## Execução
 

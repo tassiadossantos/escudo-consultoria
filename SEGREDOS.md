@@ -3,6 +3,7 @@
 ## Princípios
 - Nunca armazene segredos sensíveis (DB, JWT, Sentry, SMTP, OAuth, etc.) no repositório.
 - Use `.env` apenas para desenvolvimento local, nunca para produção/cloud.
+- Mantenha um [.env.example](.env.example) com as chaves esperadas, sem valores reais.
 - Produção: utilize cofre de segredos (Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager).
 - Configure o deploy (CI/CD) para injetar segredos via ambiente seguro.
 - Rotacione segredos periodicamente (ex: a cada 90 dias).
