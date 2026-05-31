@@ -1,0 +1,30 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  typecheck-and-build:
+    name: Typecheck and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Typecheck (root)
+        run: pnpm run typecheck
+
+      - name: Build frontend (site)
+        run: pnpm --filter @workspace/sst-consultoria run build
