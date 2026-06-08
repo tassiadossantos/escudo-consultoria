@@ -26,11 +26,7 @@ router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
 
     // "Apagando com lápis": Não removemos do banco, mas marcamos como 'deletado' para auditoria.
     const deletedAt = new Date();
-    const updated = await db.update(messages)
-      .set({ deletedAt })
-      .where(and(eq(messages.id, id), isNull(messages.deletedAt)))
-      .returning();
-    if (!updated.length) return res.status(404).json({ error: "Mensagem não encontrada ou já deletada" });
+    
     // Registra quem apagou, quando e de onde veio o pedido.
     const auditLog = {
       event: "delete_message",
@@ -40,13 +36,27 @@ router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
       traceId: req.traceId,
       user: req.auth?.role || "anonymous"
     };
-    req.log.info(auditLog, "Auditoria: mensagem deletada");
-    // Publicar evento na notification_queue
-    await db.insert(notificationQueue).values({
-      type: "lead_deleted",
-      payload: auditLog,
-      status: "pending"
+
+    // Atomic Transaction: Integridade entre o Soft-Delete e a Fila de Notificações
+    const updated = await db.transaction(async (tx) => {
+      const result = await tx.update(messages)
+        .set({ deletedAt })
+        .where(and(eq(messages.id, id), isNull(messages.deletedAt)))
+        .returning();
+
+      if (result.length > 0) {
+        await tx.insert(notificationQueue).values({
+          type: "lead_deleted",
+          payload: auditLog,
+          status: "pending"
+        });
+      }
+      return result;
     });
+
+    if (!updated.length) return res.status(404).json({ error: "Mensagem não encontrada ou já deletada" });
+
+    req.log.info(auditLog, "Auditoria: mensagem deletada");
     // Avisa outros sistemas que um dado foi apagado.
     if (process.env.AUDIT_WEBHOOK_URL) {
       try {
@@ -86,18 +96,23 @@ router.post("/messages", async (req, res) => {
       origem: req.body.origem || req.headers["x-origin"] || "webform",
       ipHash
     };
-    // Salva efetivamente no Banco de Dados
-    const [record] = await db.insert(messages).values(insertData).returning();
-      // Coloca na fila para avisar a equipe que chegou um novo cliente.
-      await db.insert(notificationQueue).values({
-        type: "lead_registered",
-        payload: {
-          id: record.id,
-          ...insertData,
-          traceId: req.traceId
-        },
-        status: "pending"
-      });
+
+    // Atomic Transaction: Garantia de que a mensagem e a notificação são processadas juntas
+    const [record] = await db.transaction(async (tx) => {
+      const [newRecord] = await tx.insert(messages).values(insertData).returning();
+      
+        await tx.insert(notificationQueue).values({
+          type: "lead_registered",
+          payload: {
+            id: newRecord.id,
+            ...insertData,
+            traceId: req.traceId
+          },
+          status: "pending"
+        });
+      return [newRecord];
+    });
+
     req.app.locals.leadCounter?.inc();
     // Disparar webhook pós-formulário (exemplo)
     if (process.env.WEBHOOK_URL) {

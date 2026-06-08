@@ -1,5 +1,6 @@
 
 import { Router } from "express";
+import fetch from "node-fetch";
 import { db } from "../lib/db";
 import { insertConsentSchema, consentRecords } from "../../../../lib/db/src/schema";
 import { notificationQueue } from "../../../../lib/db/src/schema/notification_queue";
@@ -88,19 +89,21 @@ router.post("/consent", async (req, res) => {
     const { timestamp, policyVersion, policyText } = parsed.data;
     // Popular status
     const status = req.body.status || "active";
-    // Inserção usando Drizzle ORM corretamente
-    const [record] = await db.insert(consentRecords).values({
-      ipHash,
-      timestamp,
-      policyVersion,
-      policyText,
-      status
-    }).returning();
-      // Publicar evento na notification_queue
-      await db.insert(notificationQueue).values({
+
+    // Atomic Transaction: Garante que o contrato e a notificação sejam salvos juntos ou nenhum dos dois
+    const [record] = await db.transaction(async (tx) => {
+      const [newRecord] = await tx.insert(consentRecords).values({
+        ipHash,
+        timestamp,
+        policyVersion,
+        policyText,
+        status
+      }).returning();
+
+      await tx.insert(notificationQueue).values({
         type: "consent_registered",
         payload: {
-          id: record.id,
+          id: newRecord.id,
           ipHash,
           timestamp,
           policyVersion,
@@ -110,6 +113,9 @@ router.post("/consent", async (req, res) => {
         },
         status: "pending"
       });
+      return [newRecord];
+    });
+
     if (!record?.id) throw new Error("Falha ao inserir consentimento");
     // Incrementa métrica Prometheus
     req.app.locals.consentCounter?.inc();
