@@ -23,14 +23,6 @@ router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
 
     // Soft delete: marca deleted_at
     const deletedAt = new Date();
-    const updated = await db.update(consentRecords)
-      .set({ deletedAt })
-      .where(and(eq(consentRecords.id, id), isNull(consentRecords.deletedAt)))
-      .returning();
-
-    // Verifica se o registro realmente existia antes de tentar apagar
-    if (!updated.length) return res.status(404).json({ error: "Consentimento não encontrado ou já deletado" });
-    // Logging detalhado de auditoria
     const auditLog = {
       event: "delete_consent",
       id,
@@ -39,13 +31,27 @@ router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
       traceId: req.traceId,
       user: req.auth?.role || "anonymous"
     };
-    req.log.info(auditLog, "Auditoria: consentimento deletado");
-    // Publicar evento na notification_queue
-    await db.insert(notificationQueue).values({
-      type: "consent_deleted",
-      payload: auditLog,
-      status: "pending"
+
+    // Atomic Transaction: Garantia de que ou tudo acontece, ou nada acontece
+    const updated = await db.transaction(async (tx) => {
+      const result = await tx.update(consentRecords)
+        .set({ deletedAt })
+        .where(and(eq(consentRecords.id, id), isNull(consentRecords.deletedAt)))
+        .returning();
+
+      if (result.length > 0) {
+        await tx.insert(notificationQueue).values({
+          type: "consent_deleted",
+          payload: auditLog,
+          status: "pending"
+        });
+      }
+      return result;
     });
+
+    if (!updated.length) return res.status(404).json({ error: "Consentimento não encontrado ou já deletado" });
+
+    req.log.info(auditLog, "Auditoria: consentimento deletado");
     // Webhook de auditoria externa
     // "Aviso Externo": Tenta avisar outros sistemas que um dado foi removido
     if (process.env.AUDIT_WEBHOOK_URL) {
