@@ -1,16 +1,19 @@
 
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 
 export const consentRecords = pgTable("consent_records", {
-  id: serial("id").primaryKey(),
+  // Um código único e impossível de adivinhar para cada contrato
+  id: uuid("id").defaultRandom().primaryKey(),
+  // O código secreto do endereço do usuário
   ipHash: text("ip_hash").notNull(),
   timestamp: timestamp("timestamp", { withTimezone: true }).notNull(),
   policyVersion: text("policy_version").notNull(),
   policyText: text("policy_text").notNull(),
   status: text("status").notNull().default("active"),
+  // Data de quando o usuário pediu para ser "esquecido"
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 

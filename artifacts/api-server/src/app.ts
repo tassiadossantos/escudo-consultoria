@@ -17,30 +17,22 @@ import { randomUUID } from "crypto";
 const app: Express = express();
 app.set('trust proxy', 1); // Confia no primeiro proxy (ngrok, Vercel, etc)
 
-// Servir favicon.ico
-app.get("/favicon.ico", (req: Request, res: Response) => {
-	const faviconPath = path.join(__dirname, "../public/favicon.ico");
-	res.sendFile(faviconPath);
-});
-
-// Endpoint institucional na raiz
-app.get("/", (req: Request, res: Response) => {
-	res.json({
-		status: "ok",
-		name: "Escudo Consultoria API",
-		version: process.env.npm_package_version || "dev",
-		timestamp: new Date().toISOString(),
-	});
-});
-
-// Endpoint técnico para health check
-app.get("/health", (_req: Request, res: Response) => {
-	res.send("OK");
-});
-
-// Helmet para headers de segurança
+// Coloca um "capacete" de segurança no site para evitar ataques comuns da internet
 app.use(helmet());
-// Rate limiting global (100 req/min por IP)
+
+// Este é o "diário de bordo". Tudo o que acontece gera um registro.
+// O traceId é como um número de protocolo para rastrear uma conversa do início ao fim.
+const logger = pino({ level: process.env.LOG_LEVEL || "info" });
+app.use((req, res, next) => {
+	const traceId = req.headers["x-trace-id"]?.toString() || randomUUID();
+	req.traceId = traceId;
+	res.setHeader("x-trace-id", traceId);
+	req.log = logger.child({ traceId });
+	next();
+});
+app.use(expressPino({ logger, customProps: (req) => ({ traceId: req.traceId }) }));
+
+// "Limitador de velocidade": Impede que alguém tente entrar no site mil vezes por segundo e trave o sistema.
 const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
@@ -48,8 +40,7 @@ const globalLimiter = rateLimit({
   legacyHeaders: false,
 });
 app.use(globalLimiter);
-
-// Rate limiting mais restrito para endpoints sensíveis
+// Áreas sensíveis (como enviar mensagens) têm segurança extra: apenas 10 tentativas por minuto.
 const sensitiveLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -60,25 +51,11 @@ const sensitiveLimiter = rateLimit({
 app.use("/api/messages", sensitiveLimiter);
 app.use("/api/consent", sensitiveLimiter);
 
-// Sentry init (configure DSN via env var SENTRY_DSN)
+// "Alarme de Incêndio": Se algo quebrar, ele avisa a equipe de engenharia instantaneamente.
 if (process.env.SENTRY_DSN) {
 	Sentry.init({ dsn: process.env.SENTRY_DSN });
 	app.use(Sentry.Handlers.requestHandler());
 }
-
-
-// Pino logger com traceId
-const logger = pino({ level: process.env.LOG_LEVEL || "info" });
-app.use((req, res, next) => {
-	// Gera ou propaga traceId
-	const traceId = req.headers["x-trace-id"]?.toString() || randomUUID();
-	req.traceId = traceId;
-	res.setHeader("x-trace-id", traceId);
-	// Injeta traceId no logger
-	req.log = logger.child({ traceId });
-	next();
-});
-app.use(expressPino({ logger, customProps: (req) => ({ traceId: req.traceId }) }));
 
 const allowedOrigins = [
 	"http://localhost:3000",
@@ -86,6 +63,7 @@ const allowedOrigins = [
 	"http://localhost:5174",
 	"https://escudo.consultoria.com.br"
 ];
+// "Lista de Convidados": Só aceita pedidos vindos desses endereços específicos para evitar hackers.
 app.use(cors({
 	origin: (origin, callback) => {
 		// Permite requests sem origin (ex: curl, mobile)
@@ -101,12 +79,34 @@ app.use(cors({
 	},
 	credentials: true
 }));
+// Faz o sistema entender textos e formulários enviados pelo site
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- Definição de Rotas ---
 
+// Entrega o pequeno ícone que aparece na aba do navegador
+app.get("/favicon.ico", (req: Request, res: Response) => {
+	const faviconPath = path.join(__dirname, "../public/favicon.ico");
+	res.sendFile(faviconPath);
+});
 
-// Prometheus metrics
+// Página de boas-vindas técnica (confirma que o motor está ligado)
+app.get("/", (req: Request, res: Response) => {
+	res.json({
+		status: "ok",
+		name: "Escudo Consultoria API",
+		version: process.env.npm_package_version || "dev",
+		timestamp: new Date().toISOString(),
+	});
+});
+
+// "Exame de rotina": Outros sistemas usam isso para saber se a API está saudável.
+app.get("/health", (_req: Request, res: Response) => {
+	res.send("OK");
+});
+
+// "Medidores de desempenho": Conta quantos usuários entraram e quantas mensagens foram enviadas.
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 collectDefaultMetrics();
 const consentCounter = new promClient.Counter({
@@ -120,7 +120,7 @@ const leadCounter = new promClient.Counter({
 app.locals.consentCounter = consentCounter;
 app.locals.leadCounter = leadCounter;
 
-// JWT middleware (protege /metrics)
+// "Crachá de Segurança": Só quem tem a chave correta pode ver os dados de desempenho.
 const JWT_SECRET = process.env.JWT_SECRET || "changeme-in-prod";
 app.use("/metrics", jwt({ secret: JWT_SECRET, algorithms: ["HS256"] }));
 app.get("/metrics", async (_req: Request, res: Response) => {
@@ -130,12 +130,13 @@ app.get("/metrics", async (_req: Request, res: Response) => {
 // Utilitário para geração de token admin (apenas para desenvolvimento)
 if (process.env.NODE_ENV !== "production") {
 	app.get("/dev/generate-admin-token", (_req, res) => {
-		const jwt = require("jsonwebtoken");
-		const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "1h" });
+		const jsonwebtoken = require("jsonwebtoken");
+		const token = jsonwebtoken.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "1h" });
 		res.json({ token });
 	});
 }
 
+// Conecta as rotas (os caminhos) da API (Mensagens e Privacidade)
 app.use("/api", router);
 
 // Sentry error handler (last)
@@ -143,10 +144,24 @@ if (process.env.SENTRY_DSN) {
 	app.use(Sentry.Handlers.errorHandler());
 }
 
-// Fallback error logger
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-	logger.error({ err }, "Unhandled error");
-	res.status(500).json({ error: "Internal server error" });
+// O "Departamento de Reclamações": Se qualquer coisa der errado, este código garante 
+// que o sistema responda de forma educada e organizada, sem "explodir".
+app.use((err: any, req: any, res: Response, _next: NextFunction) => {
+	if (err.name === "UnauthorizedError") {
+		return res.status(401).json({
+			error: "Security Infrastructure Failure",
+			message: "Invalid or missing cryptographic token",
+			traceId: req.traceId,
+		});
+	}
+
+	const statusCode = err.status || 500;
+	logger.error({ err, traceId: req.traceId }, statusCode === 500 ? "Erro Interno Grave" : "Erro de Requisição");
+	
+	res.status(statusCode).json({
+		error: statusCode === 500 ? "Internal Systems Error" : (err.message || "Request Pipeline Error"),
+		traceId: req.traceId,
+	});
 });
 
 export default app;

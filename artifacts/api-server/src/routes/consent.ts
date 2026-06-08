@@ -14,16 +14,21 @@ import { expressjwt as jwt } from "express-jwt";
 
 const jwtMiddleware = jwt({ secret: process.env.JWT_SECRET || "changeme-in-prod", algorithms: ["HS256"] });
 
+// "Direito ao Esquecimento": Remove o registro de que alguém aceitou os termos (LGPD)
 router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!id) return res.status(400).json({ error: "ID inválido" });
+    const idParam = z.string().uuid().safeParse(req.params.id);
+    if (!idParam.success) return res.status(400).json({ error: "ID malformado ou inválido" });
+    const id = idParam.data;
+
     // Soft delete: marca deleted_at
     const deletedAt = new Date();
     const updated = await db.update(consentRecords)
       .set({ deletedAt })
       .where(and(eq(consentRecords.id, id), isNull(consentRecords.deletedAt)))
       .returning();
+
+    // Verifica se o registro realmente existia antes de tentar apagar
     if (!updated.length) return res.status(404).json({ error: "Consentimento não encontrado ou já deletado" });
     // Logging detalhado de auditoria
     const auditLog = {
@@ -42,6 +47,7 @@ router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
       status: "pending"
     });
     // Webhook de auditoria externa
+    // "Aviso Externo": Tenta avisar outros sistemas que um dado foi removido
     if (process.env.AUDIT_WEBHOOK_URL) {
       try {
         await fetch(process.env.AUDIT_WEBHOOK_URL, {
@@ -53,13 +59,14 @@ router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
         req.log.warn({ err }, "Falha ao disparar webhook de auditoria");
       }
     }
-    return res.status(200).json({ success: true, deletedId: id, deletedAt, traceId: req.traceId });
+    return res.status(200).json({ success: true, deletedId: id.toString(), deletedAt, traceId: req.traceId });
   } catch (err) {
     req.log.error({ err }, 'Erro ao deletar consentimento');
     return res.status(500).json({ error: "Erro ao deletar consentimento" });
   }
 });
 
+// "Registrar Contrato": Salva quando um usuário clica em "Eu aceito os termos" no site
 router.post("/consent", async (req, res) => {
   try {
     // Validação do corpo da requisição

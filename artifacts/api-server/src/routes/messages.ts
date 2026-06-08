@@ -16,18 +16,22 @@ import { and, isNull } from "drizzle-orm";
 // Middleware de autenticação JWT (apenas admin pode deletar)
 const jwtMiddleware = jwt({ secret: process.env.JWT_SECRET || "changeme-in-prod", algorithms: ["HS256"] });
 
+// "Direito ao Esquecimento": Apaga os dados de uma pessoa se ela pedir (LGPD)
 router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!id) return res.status(400).json({ error: "ID inválido" });
-    // Soft delete: marca deleted_at
+    // Verifica se o ID enviado é um código válido (como um CPF de dados)
+    const idParam = z.string().uuid().safeParse(req.params.id);
+    if (!idParam.success) return res.status(400).json({ error: "ID inválido" });
+    const id = idParam.data;
+
+    // "Apagando com lápis": Não removemos do banco, mas marcamos como 'deletado' para auditoria.
     const deletedAt = new Date();
     const updated = await db.update(messages)
       .set({ deletedAt })
       .where(and(eq(messages.id, id), isNull(messages.deletedAt)))
       .returning();
     if (!updated.length) return res.status(404).json({ error: "Mensagem não encontrada ou já deletada" });
-    // Logging detalhado de auditoria
+    // Registra quem apagou, quando e de onde veio o pedido.
     const auditLog = {
       event: "delete_message",
       id,
@@ -43,7 +47,7 @@ router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
       payload: auditLog,
       status: "pending"
     });
-    // Webhook de auditoria externa
+    // Avisa outros sistemas que um dado foi apagado.
     if (process.env.AUDIT_WEBHOOK_URL) {
       try {
         await fetch(process.env.AUDIT_WEBHOOK_URL, {
@@ -62,27 +66,29 @@ router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
   }
 });
 
+// "Recebendo Mensagem": Quando alguém preenche o formulário no site.
 router.post("/messages", async (req, res) => {
   try {
-    // Validação do corpo da requisição
+    // Checa se o nome, e-mail e mensagem estão escritos corretamente.
     const parsed = insertMessageSchema.safeParse(req.body);
     if (!parsed.success) {
       req.log.warn({ err: parsed.error }, 'Message validation error');
       return res.status(400).json({ error: "Dados inválidos", details: parsed.error.errors });
     }
-    // Gerar hash do IP do usuário
+    // "Disfarce de endereço": Transformamos o endereço de internet do usuário em um código secreto para privacidade.
     const ip = req.headers["x-forwarded-for"]?.toString() || req.socket.remoteAddress || "";
     const salt = process.env.IP_HASH_SALT || "escudo-default-salt";
     const ipHash = crypto.createHash("sha256").update(ip + salt).digest("hex");
-    // Popular status e origem
+    // Prepara os dados para guardar na gaveta
     const insertData = {
       ...parsed.data,
       status: req.body.status || "pending",
       origem: req.body.origem || req.headers["x-origin"] || "webform",
       ipHash
     };
+    // Salva efetivamente no Banco de Dados
     const [record] = await db.insert(messages).values(insertData).returning();
-      // Publicar evento na notification_queue
+      // Coloca na fila para avisar a equipe que chegou um novo cliente.
       await db.insert(notificationQueue).values({
         type: "lead_registered",
         payload: {
