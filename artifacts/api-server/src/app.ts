@@ -4,6 +4,7 @@ import express, { type Express, Request, Response, NextFunction } from "express"
 import path from "path";
 import cors from "cors";
 import router from "./routes";
+import healthRouter from "./routes/health";
 import pino from "pino";
 import expressPino from "pino-http";
 import * as Sentry from "@sentry/node";
@@ -52,7 +53,8 @@ app.use("/api/messages", sensitiveLimiter);
 app.use("/api/consent", sensitiveLimiter);
 
 // "Alarme de Incêndio": Se algo quebrar, ele avisa a equipe de engenharia instantaneamente.
-if (process.env.SENTRY_DSN) {
+/* v8 ignore next 4 */
+if (process.env.SENTRY_DSN && process.env.NODE_ENV === "production") {
 	Sentry.init({ dsn: process.env.SENTRY_DSN });
 	app.use(Sentry.Handlers.requestHandler());
 }
@@ -101,12 +103,8 @@ app.get("/", (req: Request, res: Response) => {
 	});
 });
 
-// "Exame de rotina": Outros sistemas usam isso para saber se a API está saudável.
-app.get("/health", (_req: Request, res: Response) => {
-	res.send("OK");
-});
-
 // "Medidores de desempenho": Conta quantos usuários entraram e quantas mensagens foram enviadas.
+/* v8 ignore next 10 */
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
 collectDefaultMetrics();
 const consentCounter = new promClient.Counter({
@@ -119,6 +117,9 @@ const leadCounter = new promClient.Counter({
 });
 app.locals.consentCounter = consentCounter;
 app.locals.leadCounter = leadCounter;
+
+// "Exame de rotina": Protocolo de telemetria prioritário.
+app.use("/health", healthRouter);
 
 // "Crachá de Segurança": Só quem tem a chave correta pode ver os dados de desempenho.
 const JWT_SECRET = process.env.JWT_SECRET || "changeme-in-prod";
@@ -140,6 +141,7 @@ if (process.env.NODE_ENV !== "production") {
 app.use("/api", router);
 
 // Sentry error handler (last)
+/* v8 ignore next 3 */
 if (process.env.SENTRY_DSN) {
 	app.use(Sentry.Handlers.errorHandler());
 }

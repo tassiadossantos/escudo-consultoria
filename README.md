@@ -9,34 +9,57 @@ Este projeto implementa uma infraestrutura de backend robusta focada em **Integr
 - **Security Perimeter:** Middlewares de CORS, Helmet e JWT (RS256) para proteção de vetores de ataque comuns.
 - **Observability:** Telemetria integrada com Pino Logger (JSON structured logs) e rastreabilidade ponta-a-ponta via `traceId`.
 
+### Ecossistema de Aplicações
+Esta API de missão crítica serve como o backbone para o **Super Site de Consultoria SST**, uma plataforma frontend projetada para qualificação de leads, educação de mercado e conversão 24/7. A API gerencia a persistência de dados (leads, clientes, documentos, treinamentos, posts de blog), autenticação, e integrações críticas, garantindo a integridade e resiliência necessárias para o ecossistema completo da Escudo Consultoria.
+
+
 ## 🛡 Implementações de Missão Crítica
-1. **Unificação UUID:** Todos os identificadores sequenciais (Serial) foram migrados para UUID v4 para evitar vazamento de metadados e permitir shard de banco.
-2. **Soft Delete & Auditoria:** Implementação de Direito ao Esquecimento (LGPD) onde registros pessoais são marcados com `deleted_at` sem perda de integridade referencial.
-3. **Resiliência de Webhooks:** Disparos de auditoria externa e notificações operam em blocos isolados com captura de exceção, garantindo que falhas de rede de terceiros não interrompam o fluxo principal de negócios.
-4. **Global Error Handling:** Unificação de respostas 4xx e 5xx para garantir consistência de consumo pelo frontend.
+1.  **Unificação UUID:** Identificadores UUID v4 para evitar vazamento de metadados e permitir sharding.
+2.  **Soft Delete & LGPD:** Implementação de "Direito ao Esquecimento" via `deleted_at` com preservação de integridade.
+3.  **Resiliência de Webhooks:** Blocos `try/catch` isolados garantem que falhas em serviços de terceiros (Auditoria/Notificação) não interrompam a transação principal.
+4.  **Runtime Type Safety:** Validação rigorosa via Zod em todas as entradas de API.
 
-## 🛠 Comandos Operacionais (Terminal)
+## 🛠 Protocolos Operacionais (Terminal)
 
-### 1. Inicialização de Infraestrutura (Cold Start)
-Caso haja inconsistência entre o estado físico (DB) e o estado lógico (Drizzle), execute o protocolo de reset:
+**Nota:** Este projeto utiliza `pnpm` e o protocolo `catalog:`. O uso de `npm` resultará em erros de instalação.
+
+### 1. Preparação do Ambiente
 ```powershell
-# Para os containers e deleta volumes persistentes
-npx supabase stop --no-backup
+# Instalação de dependências do workspace
+pnpm install
+```
 
-# Inicia nova instância limpa
+### 2. Desenvolvimento e Execução
+```powershell
+# Iniciar site principal (Porta 5174)
+pnpm run dev
+
+# Iniciar site e Mockup Sandbox simultaneamente
+pnpm run dev:all
+```
+
+### 3. Gerenciamento de Banco de Dados
+```powershell
+# Iniciar infraestrutura Supabase local
 npx supabase start
+
+# Sincronizar Schema (Drizzle -> Postgres)
+pnpm run db:push
+
+# Interface Visual do Banco de Dados
+pnpm run db:studio
 ```
 
 ### 2. Sincronização de Schema
 Aplica as definições de UUID e chaves estrangeiras ao PostgreSQL:
 ```powershell
-npm run db:push
+pnpm run db:push
 ```
 
 ### 3. Suíte de Testes e Validação de Cobertura
 Protocolo de verificação exaustiva com isolamento de threads para garantir atomicidade:
 ```powershell
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ## 🧪 Resultados de Verificação e Validação (V&V)

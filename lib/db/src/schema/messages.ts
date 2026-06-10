@@ -20,5 +20,5 @@ export const messages = pgTable("messages", {
 });
 
 export const insertMessageSchema = createInsertSchema(messages)
-  .omit({ id: true });
+  .omit({ id: true, createdAt: true, ipHash: true });
 export type Message = typeof messages.$inferSelect;

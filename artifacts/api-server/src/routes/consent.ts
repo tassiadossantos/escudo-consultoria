@@ -1,17 +1,14 @@
-
 import { Router } from "express";
-import fetch from "node-fetch";
 import { db } from "../lib/db";
 import { insertConsentSchema, consentRecords } from "../../../../lib/db/src/schema";
 import { notificationQueue } from "../../../../lib/db/src/schema/notification_queue";
 import { z } from "zod";
 import crypto from "crypto";
-
-const router = Router();
-
-// Endpoint de deleção de consentimento (direito ao esquecimento)
 import { eq, and, isNull } from "drizzle-orm";
 import { expressjwt as jwt } from "express-jwt";
+import { getIpHash, getClientIp } from "../lib/security";
+
+const router = Router();
 
 const jwtMiddleware = jwt({ secret: process.env.JWT_SECRET || "changeme-in-prod", algorithms: ["HS256"] });
 
@@ -28,7 +25,7 @@ router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
       event: "delete_consent",
       id,
       deletedAt: deletedAt.toISOString(),
-      ip: req.headers["x-forwarded-for"]?.toString() || req.socket.remoteAddress || "",
+      ip: getClientIp(req),
       traceId: req.traceId,
       user: req.auth?.role || "anonymous"
     };
@@ -83,12 +80,8 @@ router.post("/consent", async (req, res) => {
       return res.status(400).json({ error: "Dados inválidos", details: parsed.error.errors });
     }
     // Mascarar IP do usuário (hash SHA-256 do IP + salt)
-    const ip = req.headers["x-forwarded-for"]?.toString() || req.socket.remoteAddress || "";
-    const salt = process.env.IP_HASH_SALT || "escudo-default-salt";
-    const ipHash = crypto.createHash("sha256").update(ip + salt).digest("hex");
-    const { timestamp, policyVersion, policyText } = parsed.data;
-    // Popular status
-    const status = req.body.status || "active";
+    const ipHash = getIpHash(req);
+    const { timestamp, policyVersion, policyText, status = "active" } = parsed.data;
 
     // Atomic Transaction: Garante que o contrato e a notificação sejam salvos juntos ou nenhum dos dois
     const [record] = await db.transaction(async (tx) => {

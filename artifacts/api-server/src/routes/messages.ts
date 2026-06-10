@@ -1,17 +1,14 @@
-
 import { Router } from "express";
-import fetch from "node-fetch";
 import { db } from "../lib/db";
 import { messages, insertMessageSchema } from "../../../../lib/db/src/schema/messages";
 import { notificationQueue } from "../../../../lib/db/src/schema/notification_queue";
 import { z } from "zod";
 import crypto from "crypto";
+import { and, eq, isNull } from "drizzle-orm";
+import { expressjwt as jwt } from "express-jwt";
+import { getIpHash, getClientIp } from "../lib/security";
 
 const router = Router();
-// Endpoint de deleção de dados pessoais (direito ao esquecimento)
-import { eq } from "drizzle-orm";
-import { expressjwt as jwt } from "express-jwt";
-import { and, isNull } from "drizzle-orm";
 
 // Middleware de autenticação JWT (apenas admin pode deletar)
 const jwtMiddleware = jwt({ secret: process.env.JWT_SECRET || "changeme-in-prod", algorithms: ["HS256"] });
@@ -32,7 +29,7 @@ router.delete("/messages/:id", jwtMiddleware, async (req, res) => {
       event: "delete_message",
       id,
       deletedAt: deletedAt.toISOString(),
-      ip: req.headers["x-forwarded-for"]?.toString() || req.socket.remoteAddress || "",
+      ip: getClientIp(req),
       traceId: req.traceId,
       user: req.auth?.role || "anonymous"
     };
@@ -86,9 +83,7 @@ router.post("/messages", async (req, res) => {
       return res.status(400).json({ error: "Dados inválidos", details: parsed.error.errors });
     }
     // "Disfarce de endereço": Transformamos o endereço de internet do usuário em um código secreto para privacidade.
-    const ip = req.headers["x-forwarded-for"]?.toString() || req.socket.remoteAddress || "";
-    const salt = process.env.IP_HASH_SALT || "escudo-default-salt";
-    const ipHash = crypto.createHash("sha256").update(ip + salt).digest("hex");
+    const ipHash = getIpHash(req);
     // Prepara os dados para guardar na gaveta
     const insertData = {
       ...parsed.data,

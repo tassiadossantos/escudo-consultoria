@@ -14,7 +14,6 @@ describe('LGPD — Direito ao Esquecimento', () => {
     const res = await request(app)
       .post('/api/consent')
       .send({
-        ipHash: 'hash_teste',
         timestamp: new Date().toISOString(),
         policyVersion: 'v1.0',
         policyText: 'Li e aceito a política de privacidade.'

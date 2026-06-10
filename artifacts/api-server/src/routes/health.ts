@@ -1,11 +1,15 @@
-import { Router, type IRouter } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
+import { Router } from "express";
 
-const router: IRouter = Router();
+const router = Router();
 
-router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+// Responde na raiz do path montado (ex: /health)
+router.get("/", (_req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "escudo-api",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 export default router;

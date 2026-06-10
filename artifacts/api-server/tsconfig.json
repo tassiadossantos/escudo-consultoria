@@ -3,9 +3,18 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "types": ["node"]
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node", "express", "supertest", "vitest/globals", "vitest"],
+    "typeRoots": [
+      "../../node_modules/@types"
+    ]
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "../../express.d.ts"
+  ],
   "references": [
     {
       "path": "../../lib/db"
