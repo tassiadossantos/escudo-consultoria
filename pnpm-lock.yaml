@@ -15,9 +15,6 @@ catalogs:
     '@tanstack/react-query':
       specifier: ^5.95.2
       version: 5.101.0
-    '@types/node':
-      specifier: ^25.9.2
-      version: 25.9.2
     '@vitejs/plugin-react':
       specifier: ^5.2.0
       version: 5.2.0
@@ -201,7 +198,7 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6
       '@types/node':
-        specifier: 'catalog:'
+        specifier: 25.9.2
         version: 25.9.2
       '@types/pg':
         specifier: ^8.20.0
