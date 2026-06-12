@@ -10,7 +10,7 @@ Este projeto implementa uma infraestrutura de backend robusta focada em **Integr
 - **Observability:** Telemetria integrada com Pino Logger (JSON structured logs) e rastreabilidade ponta-a-ponta via `traceId`.
 
 ### Ecossistema de Aplicações
-Esta API de missão crítica serve como o backbone para o **Super Site de Consultoria SST**, uma plataforma frontend projetada para qualificação de leads, educação de mercado e conversão 24/7. A API gerencia a persistência de dados (leads, clientes, documentos, treinamentos, posts de blog), autenticação, e integrações críticas, garantindo a integridade e resiliência necessárias para o ecossistema completo da Escudo Consultoria.
+Esta API de missão crítica serve como o backbone para o **Site de Consultoria SST**, uma plataforma frontend projetada para qualificação de leads, educação de mercado e conversão 24/7. A API gerencia a persistência de dados (leads, clientes, documentos, treinamentos, posts de blog), autenticação, e integrações críticas, garantindo a integridade e resiliência necessárias para o ecossistema completo da Escudo Consultoria.
 
 
 ## 🛡 Implementações de Missão Crítica
