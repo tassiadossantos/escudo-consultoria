@@ -43,6 +43,9 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Create .nojekyll file
+        run: echo "" > frontend/dist/public/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
