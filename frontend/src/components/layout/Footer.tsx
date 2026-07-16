@@ -18,7 +18,7 @@ export function Footer() {
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-2">
               <img
-                src="/logo.png"
+                src={`${import.meta.env.BASE_URL}/logo.png`}
                 alt="Logo SST"
                 className="h-10 w-10 object-contain mix-blend-screen"
               />

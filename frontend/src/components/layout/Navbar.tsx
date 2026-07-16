@@ -57,7 +57,7 @@ export function Navbar() {
             }}
           >
             <img
-              src="/logo.png"
+              src={`${import.meta.env.BASE_URL}/logo.png`}
               alt="Logo SST"
               className="h-10 w-10 object-contain group-hover:scale-105 transition-transform mix-blend-screen"
             />
