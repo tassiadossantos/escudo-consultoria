@@ -93,7 +93,7 @@ export default function Blog() {
               <article>
                 <div className="relative aspect-21/9 md:aspect-21/8 overflow-hidden">
                   <img
-                    src={`${import.meta.env.BASE_URL}${import.meta.env.BASE_URL.endsWith('/') ? '' : '/'}${featured.image.startsWith('/') ? featured.image.slice(1) : featured.image}`}
+                    src={`${import.meta.env.BASE_URL}${featured.image}`}
                     alt={featured.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -144,7 +144,7 @@ export default function Blog() {
                 {/* Image */}
                 <div className="relative aspect-video overflow-hidden">
                   <img
-                    src={`${import.meta.env.BASE_URL}${import.meta.env.BASE_URL.endsWith('/') ? '' : '/'}${post.image.startsWith('/') ? post.image.slice(1) : post.image}`}
+                    src={`${import.meta.env.BASE_URL}${post.image}`}
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-105"
                   />
