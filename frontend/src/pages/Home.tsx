@@ -125,7 +125,7 @@ function HeroSection() {
           >
             <div className="relative rounded-3xl overflow-hidden aspect-video lg:aspect-auto lg:h-120 glow-effect border border-white/10">
               <img 
-                src={`${import.meta.env.BASE_URL}hero-sst.png`} 
+                src={`${import.meta.env.BASE_URL}/hero-sst.png`} 
                 alt="Técnico de Segurança do Trabalho em campo" 
                 className="w-full h-full object-cover object-center scale-105 hover:scale-100 transition-transform duration-700"
               />
@@ -744,7 +744,7 @@ function TestimonialsSection() {
       company: "Metalúrgica Kiron",
       emp: "489 funcionários",
       text: "Precisávamos regularizar urgente para uma auditoria. O PGR foi entregue em 2 dias e salvou nossa operação. Profissionalismo impecável.",
-      img: `${base}client1.png`
+      img: `${base}/client1.png`
     },
     {
       name: "Qiáo Zhì",
@@ -752,7 +752,7 @@ function TestimonialsSection() {
       company: "TM Group Brasil",
       emp: "1479 funcionários",
       text: "Treinamento NR 35 com qualidade excepcional. Equipe totalmente capacitada e dentro do prazo. Recomendo sem hesitar.",
-      img: `${base}client2.png`
+      img: `${base}/client2.png`
     },
     {
       name: "Marcela Franco",
@@ -760,7 +760,7 @@ function TestimonialsSection() {
       company: "Indústria Vork",
       emp: "127 funcionários",
       text: "A consultoria mensal transformou nossa gestão de riscos. Zero autuações nos últimos 18 meses. Parceria indispensável. Profissionais de altíssimo nível.",
-      img: `${base}client3.png`
+      img: `${base}/client3.png`
     },
     {
       name: "Maria Fernanda Costa",
@@ -768,7 +768,7 @@ function TestimonialsSection() {
       company: "Rede SINTER",
       emp: "219 funcionários",
       text: "Atendimento ágil, documentação completa e suporte pós-entrega. Exatamente o que precisávamos para manter nossa conformidade.",
-      img: `${base}client4.png`
+      img: `${base}/client4.png`
     },
     {
       name: "Acácio Mendes",
@@ -776,7 +776,7 @@ function TestimonialsSection() {
       company: "Supermercados Mendes",
       emp: "43 funcionários",
       text: "Após anos com problemas com fiscalização, finalmente temos tudo regularizado. Custo-benefício excelente e equipe muito atenciosa.",
-      img: `${base}client5.png`
+      img: `${base}/client5.png`
     },
     {
       name: "Ricardo Ferreira",
@@ -784,7 +784,7 @@ function TestimonialsSection() {
       company: "Construtora Ferreira & Filhos",
       emp: "197 funcionários",
       text: "Contratamos para o PGR e APR e ficamos tão satisfeitos que migramos para consultoria mensal. Hoje dormimos tranquilos com a legislação.",
-      img: `${base}client6.png`
+      img: `${base}/client6.png`
     }
   ];
 
