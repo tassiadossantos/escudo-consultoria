@@ -58,7 +58,7 @@ export default function BlogPost() {
             </span>
           </div>
           {/* Imagem de capa */}
-          <img src={`${import.meta.env.BASE_URL}${post.image.startsWith('/') ? post.image.slice(1) : post.image}`} alt={post.title} className="w-full rounded-3xl shadow-2xl mb-10 border-4 border-white" />
+          <img src={`${import.meta.env.BASE_URL}${import.meta.env.BASE_URL.endsWith('/') ? '' : '/'}${post.image.startsWith('/') ? post.image.slice(1) : post.image}`} alt={post.title} className="w-full rounded-3xl shadow-2xl mb-10 border-4 border-white" />
           {/* Autor Premium */}
           {post.author && (
             <div className="mb-10">
