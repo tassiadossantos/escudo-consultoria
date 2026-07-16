@@ -1,0 +1,39 @@
+{
+  "name": "escudo-consultoria",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm run dev:site",
+    "dev:site": "pnpm --filter @workspace/frontend run dev",
+    "dev:api": "pnpm --filter @workspace/backend run dev",
+    "dev:preview": "pnpm --filter @workspace/mockup-sandbox exec cross-env PORT=5173 BASE_PATH=/ vite --config vite.config.ts --host 0.0.0.0",
+    "build": "pnpm --filter @workspace/frontend run build",
+    "build:api": "pnpm --filter @workspace/backend run build",
+    "serve": "pnpm --filter @workspace/frontend run serve",
+    "typecheck": "pnpm exec tsc --build",
+    "typecheck:frontend": "pnpm --filter @workspace/frontend run typecheck",
+    "typecheck:api": "pnpm --filter @workspace/backend run typecheck",
+    "test": "dotenv -e .env -- vitest run",
+    "test:unit": "dotenv -e .env -- vitest run --poolOptions.threads.maxThreads=1 --poolOptions.threads.minThreads=1",
+    "test:watch": "vitest",
+    "test:coverage": "dotenv -e .env -- vitest run --coverage --poolOptions.threads.maxThreads=1 --poolOptions.threads.minThreads=1",
+    "test:e2e": "npx playwright test --config=playwright.config.ts",
+    "lint": "eslint .",
+    "db:push": "dotenv -e .env -- npx drizzle-kit push",
+    "db:studio": "npx drizzle-kit studio"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@rollup/rollup-win32-x64-msvc": "^4.59.1",
+    "@tailwindcss/oxide-win32-x64-msvc": "^4.2.2",
+    "@types/node": "25.9.2",
+    "@vitest/coverage-v8": "2.1.9",
+    "autocannon": "^8.0.0",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9.21.0",
+    "lightningcss-win32-x64-msvc": "^1.32.0",
+    "prettier": "^3.8.1",
+    "typescript": "~5.7.3",
+    "vitest": "^2.1.9"
+  }
+}

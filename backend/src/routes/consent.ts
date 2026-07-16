@@ -1,0 +1,120 @@
+import { Router } from "express";
+import { db, insertConsentSchema, consentRecords, notificationQueue } from "@workspace/db";
+import { z } from "zod";
+import crypto from "crypto";
+import { eq, and, isNull } from "drizzle-orm";
+import { expressjwt as jwt } from "express-jwt";
+import { getIpHash, getClientIp } from "../lib/security";
+
+const router = Router();
+
+const jwtMiddleware = jwt({ secret: process.env.JWT_SECRET || "changeme-in-prod", algorithms: ["HS256"] });
+
+// "Direito ao Esquecimento": Remove o registro de que alguém aceitou os termos (LGPD)
+router.delete("/consent/:id", jwtMiddleware, async (req, res) => {
+  try {
+    const idParam = z.string().uuid().safeParse(req.params.id);
+    if (!idParam.success) return res.status(400).json({ error: "ID malformado ou inválido" });
+    const id = idParam.data;
+
+    // Soft delete: marca deleted_at
+    const deletedAt = new Date();
+    const auditLog = {
+      event: "delete_consent",
+      id,
+      deletedAt: deletedAt.toISOString(),
+      ip: getClientIp(req),
+      traceId: req.traceId,
+      user: req.auth?.role || "anonymous"
+    };
+
+    // Atomic Transaction: Garantia de que ou tudo acontece, ou nada acontece
+    const updated = await db.transaction(async (tx) => {
+      const result = await tx.update(consentRecords)
+        .set({ deletedAt })
+        .where(and(eq(consentRecords.id, id), isNull(consentRecords.deletedAt)))
+        .returning();
+
+      if (result.length > 0) {
+        await tx.insert(notificationQueue).values({
+          type: "consent_deleted",
+          payload: auditLog,
+          status: "pending"
+        });
+      }
+      return result;
+    });
+
+    if (!updated.length) return res.status(404).json({ error: "Consentimento não encontrado ou já deletado" });
+
+    req.log.info(auditLog, "Auditoria: consentimento deletado");
+    // Webhook de auditoria externa
+    // "Aviso Externo": Tenta avisar outros sistemas que um dado foi removido
+    if (process.env.AUDIT_WEBHOOK_URL) {
+      try {
+        await fetch(process.env.AUDIT_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(auditLog)
+        });
+      } catch (err) {
+        req.log.warn({ err }, "Falha ao disparar webhook de auditoria");
+      }
+    }
+    return res.status(200).json({ success: true, deletedId: id.toString(), deletedAt, traceId: req.traceId });
+  } catch (err) {
+    req.log.error({ err }, 'Erro ao deletar consentimento');
+    return res.status(500).json({ error: "Erro ao deletar consentimento" });
+  }
+});
+
+// "Registrar Contrato": Salva quando um usuário clica em "Eu aceito os termos" no site
+router.post("/consent", async (req, res) => {
+  try {
+    // Validação do corpo da requisição
+    const parsed = insertConsentSchema.safeParse(req.body);
+    if (!parsed.success) {
+      req.log.warn({ err: parsed.error }, 'Consent validation error');
+      return res.status(400).json({ error: "Dados inválidos", details: parsed.error.errors });
+    }
+    // Mascarar IP do usuário (hash SHA-256 do IP + salt)
+    const ipHash = getIpHash(req);
+    const { timestamp, policyVersion, policyText, status = "active" } = parsed.data;
+
+    // Atomic Transaction: Garante que o contrato e a notificação sejam salvos juntos ou nenhum dos dois
+    const [record] = await db.transaction(async (tx) => {
+      const [newRecord] = await tx.insert(consentRecords).values({
+        ipHash,
+        timestamp,
+        policyVersion,
+        policyText,
+        status
+      }).returning();
+
+      await tx.insert(notificationQueue).values({
+        type: "consent_registered",
+        payload: {
+          id: newRecord.id,
+          ipHash,
+          timestamp,
+          policyVersion,
+          policyText,
+          status,
+          traceId: req.traceId
+        },
+        status: "pending"
+      });
+      return [newRecord];
+    });
+
+    if (!record?.id) throw new Error("Falha ao inserir consentimento");
+    // Incrementa métrica Prometheus
+    req.app.locals.consentCounter?.inc();
+    return res.status(201).json({ id: record.id, traceId: req.traceId });
+  } catch (err) {
+    req.log.error({ err }, 'Consent endpoint error');
+    return res.status(500).json({ error: "Erro ao registrar consentimento" });
+  }
+});
+
+export default router;

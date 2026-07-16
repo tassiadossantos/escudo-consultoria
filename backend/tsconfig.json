@@ -1,0 +1,26 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["node", "express", "supertest", "vitest/globals", "vitest"],
+    "typeRoots": [
+      "../node_modules/@types"
+    ]
+  },
+  "include": [
+    "src",
+    "../express.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../lib/db"
+    },
+    {
+      "path": "../lib/api-zod"
+    }
+  ]
+}

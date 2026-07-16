@@ -1,0 +1,35 @@
+{
+  "name": "@workspace/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "build:schema": "tsc --project tsconfig.schema.json",
+    "push:schema": "pnpm run build:schema && cross-env DATABASE_URL=\"postgresql://postgres:Q5@WHfHpSBH8m3!*W8a9@db.otmtebgtdtjxyhvwlcuj.supabase.co:5432/postgres\" drizzle-kit push --schema dist/index.js --dialect postgresql",
+    "push": "drizzle-kit push --config ./drizzle.config.ts",
+    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
+    "migrate": "dotenv -e ../../.env -- drizzle-kit push --config ./drizzle.config.ts"
+  },
+  "dependencies": {
+    "@sentry/node": "^10.46.0",
+    "drizzle-orm": "^0.45.1",
+    "drizzle-zod": "^0.8.3",
+    "express-jwt": "^8.5.1",
+    "express-rate-limit": "^8.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.18.0",
+    "drizzle-kit": "^0.31.9"
+  }
+}
