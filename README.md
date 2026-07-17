@@ -25,16 +25,16 @@ Esta API de missão crítica serve como o backbone para o **Super Site de Consul
 
 ## 📜 Licença e Propriedade Intelectual
 
-Este software é distribuído sob o modelo **Source-Available** — o código-fonte é acessível para estudo e avaliação, mas **não é open source**. Uso comercial requer **Licença Exclusiva** contratual.
+Este software é **proprietário e exclusivo**. O código-fonte é acessível para transparência técnica, mas **não é open source** e **nenhum terceiro possui qualquer direito de uso**.
 
 | Documento | Descrição |
 |-----------|-----------|
 | [LICENSE](./LICENSE) | Aviso de direitos autorais e restrições de uso |
-| [SOURCE-AVAILABLE-LICENSE.md](./SOURCE-AVAILABLE-LICENSE.md) | Termos completos da licença Source-Available |
+| [SOURCE-AVAILABLE-LICENSE.md](./SOURCE-AVAILABLE-LICENSE.md) | Termos da licença Source-Available (somente leitura/estudo) |
 | [TRADEMARKS.md](./TRADEMARKS.md) | Política de uso das marcas registradas |
-| [LICENCA-EXCLUSIVA.md](./LICENCA-EXCLUSIVA.md) | Modelo de contrato de licença de uso exclusiva |
+| [LICENCA-EXCLUSIVA.md](./LICENCA-EXCLUSIVA.md) | Declaração de propriedade exclusiva de Tassia dos Santos |
 
-> **Uso comercial** do Software requer assinatura de contrato de Licença Exclusiva. Entre em contato: [INSERIR E-MAIL COMERCIAL].
+> **Todos os direitos são reservados exclusivamente à proprietária Tassia dos Santos.** Qualquer uso não autorizado constitui violação de propriedade intelectual.
 
 ---
 
@@ -161,4 +161,4 @@ Quando o workflow terminar:
 
 **Status de Engenharia:** `STABLE` | **Coverage:** `>90% (Core API)`
 **Documentação de API:** Disponível via Orval/OpenAPI no diretório `lib/api-spec`.
-**Licença:** Source-Available — Uso comercial requer Licença Exclusiva ([ver termos](./SOURCE-AVAILABLE-LICENSE.md)).
+**Licença:** Proprietária e exclusiva — Todos os direitos reservados a Tassia dos Santos.
