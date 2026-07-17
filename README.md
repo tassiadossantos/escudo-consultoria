@@ -23,6 +23,21 @@ Esta API de missão crítica serve como o backbone para o **Super Site de Consul
 3.  **Resiliência de Webhooks:** Blocos `try/catch` isolados garantem que falhas em serviços de terceiros (Auditoria/Notificação) não interrompam a transação principal.
 4.  **Runtime Type Safety:** Validação rigorosa via Zod em todas as entradas de API.
 
+## 📜 Licença e Propriedade Intelectual
+
+Este software é distribuído sob o modelo **Source-Available** — o código-fonte é acessível para estudo e avaliação, mas **não é open source**. Uso comercial requer **Licença Exclusiva** contratual.
+
+| Documento | Descrição |
+|-----------|-----------|
+| [LICENSE](./LICENSE) | Aviso de direitos autorais e restrições de uso |
+| [SOURCE-AVAILABLE-LICENSE.md](./SOURCE-AVAILABLE-LICENSE.md) | Termos completos da licença Source-Available |
+| [TRADEMARKS.md](./TRADEMARKS.md) | Política de uso das marcas registradas |
+| [LICENCA-EXCLUSIVA.md](./LICENCA-EXCLUSIVA.md) | Modelo de contrato de licença de uso exclusiva |
+
+> **Uso comercial** do Software requer assinatura de contrato de Licença Exclusiva. Entre em contato: [INSERIR E-MAIL COMERCIAL].
+
+---
+
 ## 🛠 Protocolos Operacionais (Terminal)
 
 **Nota:** Este projeto utiliza `pnpm` e o protocolo `catalog:`. O uso de `npm` resultará em erros de instalação.
@@ -146,3 +161,4 @@ Quando o workflow terminar:
 
 **Status de Engenharia:** `STABLE` | **Coverage:** `>90% (Core API)`
 **Documentação de API:** Disponível via Orval/OpenAPI no diretório `lib/api-spec`.
+**Licença:** Source-Available — Uso comercial requer Licença Exclusiva ([ver termos](./SOURCE-AVAILABLE-LICENSE.md)).
